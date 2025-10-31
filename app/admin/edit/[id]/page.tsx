@@ -30,8 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { mockProjects } from "@/components/mock/projects"
-import { mockSkills } from "@/components/mock/skills"
+import { getArchiveById, updateArchive, deleteArchive } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
 
 export default function EditPostPage() {
@@ -60,11 +59,10 @@ export default function EditPostPage() {
   // 아카이브 데이터 로드
   useEffect(() => {
     const loadArchive = async () => {
+      setLoading(true)
       try {
-        // TODO: Supabase에서 데이터 가져오기
-        // 현재는 mock 데이터 사용
-        const allArchives: Archive[] = [...mockProjects, ...mockSkills]
-        const archive = allArchives.find(a => a.id === postId)
+        // Supabase에서 데이터 가져오기
+        const archive = await getArchiveById(postId)
 
         if (!archive) {
           toast.error("아카이브를 찾을 수 없습니다")
@@ -74,17 +72,18 @@ export default function EditPostPage() {
 
         setTitle(archive.title)
         setCategory(archive.category === "프로젝트" ? "프로젝트" : "기술")
-        setField(archive.subCategory || "")
+        setField(archive.sub_category || "")
         setLabels(archive.tags || [])
         setTechnologies(archive.technologies || [])
         setDifficulty(archive.difficulty || "")
         setContent(archive.content || "")
-        setAuthor("")
+        setAuthor(archive.author || "")
 
         setLoading(false)
       } catch (error) {
         console.error("아카이브 로드 실패:", error)
         toast.error("아카이브를 불러오는데 실패했습니다")
+        setLoading(false)
         router.push("/admin")
       }
     }
@@ -104,28 +103,28 @@ export default function EditPostPage() {
     }
 
     try {
-      // TODO: Supabase에 저장
-      const archiveData = {
-        id: postId,
+      // Supabase에 업데이트
+      const updates = {
         title,
         category,
-        field,
-        labels,
+        sub_category: field,
+        tags: labels,
         technologies,
         difficulty,
         content,
         author,
-        updated_at: new Date().toISOString(),
       }
 
-      console.log("저장할 데이터:", archiveData)
+      const result = await updateArchive(postId, updates)
 
-      toast.success("아카이브가 저장되었습니다!")
-
-      // 목록으로 이동
-      setTimeout(() => {
-        router.push("/admin")
-      }, 1000)
+      if (result) {
+        toast.success("아카이브가 저장되었습니다!")
+        setTimeout(() => {
+          router.push("/admin")
+        }, 1000)
+      } else {
+        toast.error("저장에 실패했습니다")
+      }
     } catch (error) {
       console.error("저장 실패:", error)
       toast.error("저장에 실패했습니다")
@@ -134,18 +133,20 @@ export default function EditPostPage() {
 
   const handleDelete = async () => {
     try {
-      // TODO: Supabase에서 삭제
-      console.log("아카이브 삭제:", postId)
+      // Supabase에서 삭제
+      const success = await deleteArchive(postId)
 
-      toast.success("아카이브가 삭제되었습니다")
-
-      // 목록으로 이동
-      setTimeout(() => {
-        router.push("/admin")
-      }, 1000)
+      if (success) {
+        toast.success("아카이브가 삭제되었습니다")
+        setTimeout(() => {
+          router.push("/admin")
+        }, 1000)
+      } else {
+        toast.error("삭제에 실패했습니다")
+      }
     } catch (error) {
       console.error("삭제 실패:", error)
-      toast.error("삭제에 실패했습니다")
+      toast.error("삭제 중 오류가 발생했습니다")
     }
   }
 

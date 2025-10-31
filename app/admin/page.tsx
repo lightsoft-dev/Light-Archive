@@ -42,9 +42,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-import { mockProjects } from "@/components/mock/projects"
-import { mockSkills } from "@/components/mock/skills"
+import { getAllArchives, deleteArchive } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
+import { toast } from "sonner"
 
 export default function AdminPage() {
   const router = useRouter()
@@ -54,13 +54,33 @@ export default function AdminPage() {
   const [password, setPassword] = React.useState("")
   const [loginError, setLoginError] = React.useState("")
 
-  // Projects와 Skills를 통합
-  const allArchives: Archive[] = [...mockProjects, ...mockSkills]
-  const [archives, setArchives] = React.useState<Archive[]>(allArchives)
+  // Supabase에서 데이터 가져오기
+  const [archives, setArchives] = React.useState<Archive[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  // 데이터 가져오기
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      fetchArchives()
+    }
+  }, [isLoggedIn])
+
+  const fetchArchives = async () => {
+    setLoading(true)
+    try {
+      const data = await getAllArchives()
+      setArchives(data)
+    } catch (error) {
+      console.error("Failed to fetch archives:", error)
+      toast.error("데이터를 불러오는데 실패했습니다")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,9 +102,25 @@ export default function AdminPage() {
     router.push(`/admin/edit/${archive.id}`)
   }
 
-  const handleDelete = (archiveId: string) => {
-    const updatedArchives = archives.filter((archive) => archive.id !== archiveId)
-    setArchives(updatedArchives)
+  const handleDelete = async (archiveId: string) => {
+    if (!confirm("정말 삭제하시겠습니까?")) {
+      return
+    }
+
+    try {
+      const success = await deleteArchive(archiveId)
+
+      if (success) {
+        // 로컬 상태에서도 제거
+        setArchives(archives.filter((archive) => archive.id !== archiveId))
+        toast.success("아카이브가 삭제되었습니다")
+      } else {
+        toast.error("삭제에 실패했습니다")
+      }
+    } catch (error) {
+      console.error("Delete failed:", error)
+      toast.error("삭제 중 오류가 발생했습니다")
+    }
   }
 
   const columns: ColumnDef<Archive>[] = [
@@ -365,7 +401,13 @@ export default function AdminPage() {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      데이터를 불러오는 중...
+                    </TableCell>
+                  </TableRow>
+                ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                       {row.getVisibleCells().map((cell) => (

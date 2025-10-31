@@ -1,20 +1,32 @@
 "use client"
 
 import Link from "next/link"
-import { mockSkills } from "@/components/mock/skills"
+import { useState, useEffect } from "react"
+import { getArchiveById, getRelatedArchives } from "@/lib/supabase-archive"
+import type { Archive } from "@/types/archive"
 
 export function RelatedSkillsSection({ currentSkillId }: { currentSkillId?: string }) {
-  // 현재 스킬을 제외하고 같은 카테고리에서 최대 4개 선택
-  const currentSkill = mockSkills.find((s) => s.id === currentSkillId)
-  const relatedSkills = mockSkills
-    .filter((skill) => {
-      if (skill.id === currentSkillId) return false
-      if (currentSkill?.subCategory) {
-        return skill.subCategory === currentSkill.subCategory
+  const [relatedSkills, setRelatedSkills] = useState<Archive[]>([])
+
+  useEffect(() => {
+    async function fetchRelatedSkills() {
+      if (!currentSkillId) return
+
+      try {
+        // 현재 스킬 정보 가져오기
+        const currentSkill = await getArchiveById(currentSkillId)
+        if (!currentSkill) return
+
+        // 관련 스킬 가져오기 (tags 기반)
+        const related = await getRelatedArchives(currentSkillId, currentSkill.tags || [], 4)
+        setRelatedSkills(related)
+      } catch (error) {
+        console.error("Failed to fetch related skills:", error)
       }
-      return skill.category === currentSkill?.category
-    })
-    .slice(0, 4)
+    }
+
+    fetchRelatedSkills()
+  }, [currentSkillId])
 
   if (relatedSkills.length === 0) return null
 
@@ -30,21 +42,21 @@ export function RelatedSkillsSection({ currentSkillId }: { currentSkillId?: stri
               className="group block py-2 hover:opacity-80 transition-opacity"
             >
               <div className="flex gap-3">
-                {skill.image && (
+                {(skill.image || skill.thumbnail_url) && (
                   <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
                     <img
-                      src={skill.image}
+                      src={skill.image || skill.thumbnail_url || `https://images.unsplash.com/photo-1558655146-364adaf1fcc9?w=640&h=360&fit=crop`}
                       alt={skill.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-500 mb-1">{skill.subCategory || skill.category}</div>
+                  <div className="text-xs text-gray-500 mb-1">{skill.sub_category || skill.category}</div>
                   <h3 className="text-base font-medium text-black mb-1 group-hover:text-gray-600 transition-colors">
                     {skill.title}
                   </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">{skill.description}</p>
+                  <p className="text-sm text-gray-600 line-clamp-2">{skill.description || ""}</p>
                 </div>
               </div>
             </Link>

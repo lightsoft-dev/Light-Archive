@@ -28,13 +28,13 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
           fixed lg:sticky top-0 left-0 h-screen w-64 z-40
           bg-white/40 backdrop-blur-2xl
           flex flex-col
-          transition-transform duration-300 ease-in-out
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          transition-all duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full lg:hidden"}
         `}
       >
         <div className="p-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/가로logo.png" alt="Lightsoft" className="h-12" />
+            <img src="/가로logo.png" alt="Lightsoft" className="h-16" />
           </Link>
           <div className="flex items-center gap-2">
             <button onClick={onToggle} className="hidden lg:flex p-2 hover:bg-gray-100/50 rounded-md transition-colors">

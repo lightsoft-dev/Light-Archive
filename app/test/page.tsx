@@ -120,32 +120,32 @@ export default function SupabaseTestPage() {
   }
 
   // Storage 테스트
-  const testStorage = async () => {
+  const testStorage = async (bucketName: string = 'test') => {
     setStorageStatus('testing')
     setStorageError('')
     setStorageResult('')
 
     try {
-      // 'test' 버킷에 직접 접근하여 연결 확인
+      // 지정된 버킷에 직접 접근하여 연결 확인
       // 버킷 목록 조회는 관리자 권한이 필요할 수 있으므로 특정 버킷에 직접 접근
       const { data: files, error: filesError } = await supabase.storage
-        .from('test')
+        .from(bucketName)
         .list('', { limit: 1 })
 
       if (filesError) {
         // 에러 타입별 처리
-        if (filesError.message.includes('Bucket not found') || 
+        if (filesError.message.includes('Bucket not found') ||
             filesError.message.includes('not found') ||
             filesError.message.includes('does not exist')) {
           setStorageStatus('success')
-          setStorageResult('✅ Storage 연결 성공! (test 버킷이 없습니다. Storage에서 버킷을 생성하세요)')
-        } else if (filesError.message.includes('new row violates row-level security') || 
+          setStorageResult(`✅ Storage 연결 성공! (${bucketName} 버킷이 없습니다. Storage에서 버킷을 생성하세요)`)
+        } else if (filesError.message.includes('new row violates row-level security') ||
                    filesError.message.includes('RLS') ||
                    filesError.message.includes('permission denied') ||
                    filesError.message.includes('권한')) {
           setStorageStatus('error')
           setStorageError('권한 오류: Storage RLS 정책을 확인하세요')
-          setStorageResult('❌ Storage 연결 실패: RLS 정책으로 인해 접근이 거부되었습니다. Storage 정책을 확인하세요.')
+          setStorageResult(`❌ Storage 연결 실패: RLS 정책으로 인해 접근이 거부되었습니다. ${bucketName} 버킷의 RLS 정책을 확인하세요.`)
         } else {
           throw filesError
         }
@@ -153,7 +153,7 @@ export default function SupabaseTestPage() {
         // 성공: 버킷에 접근 가능
         const fileCount = files?.length || 0
         setStorageStatus('success')
-        setStorageResult(`✅ Storage 연결 성공! (test 버킷에 접근 가능합니다${fileCount > 0 ? `, ${fileCount}개의 파일/폴더가 있습니다` : ''})`)
+        setStorageResult(`✅ Storage 연결 성공! (${bucketName} 버킷에 접근 가능합니다${fileCount > 0 ? `, ${fileCount}개의 파일/폴더가 있습니다` : ''})`)
       }
     } catch (error: any) {
       setStorageStatus('error')
@@ -171,7 +171,7 @@ export default function SupabaseTestPage() {
   }
 
   // 파일 업로드 테스트
-  const testFileUpload = async () => {
+  const testFileUpload = async (bucketName: string = 'test') => {
     setStorageStatus('testing')
     setStorageError('')
     setStorageResult('')
@@ -182,37 +182,37 @@ export default function SupabaseTestPage() {
       const testFile = new Blob([testContent], { type: 'text/plain' })
       const fileName = `test-${Date.now()}.txt`
 
-      // 'test' 버킷에 업로드 시도
+      // 지정된 버킷에 업로드 시도
       const { data, error } = await supabase.storage
-        .from('test')
+        .from(bucketName)
         .upload(fileName, testFile)
 
       if (error) {
         // 에러 타입별 처리
         if (error.message.includes('Bucket not found') || error.message.includes('not found')) {
           setStorageStatus('error')
-          setStorageError('test 버킷을 찾을 수 없습니다')
-          setStorageResult('❌ 파일 업로드 실패: test 버킷이 없습니다. Supabase 대시보드에서 버킷을 생성하세요.')
-        } else if (error.message.includes('new row violates row-level security') || 
-                   error.message.includes('RLS') || 
+          setStorageError(`${bucketName} 버킷을 찾을 수 없습니다`)
+          setStorageResult(`❌ 파일 업로드 실패: ${bucketName} 버킷이 없습니다. Supabase 대시보드에서 버킷을 생성하세요.`)
+        } else if (error.message.includes('new row violates row-level security') ||
+                   error.message.includes('RLS') ||
                    error.message.includes('permission denied') ||
                    error.message.includes('권한')) {
           setStorageStatus('error')
           setStorageError('권한 오류: Storage RLS 정책을 확인하세요')
-          setStorageResult('❌ 파일 업로드 실패: RLS 정책으로 인해 업로드가 거부되었습니다. Storage 정책을 확인하세요.')
+          setStorageResult(`❌ 파일 업로드 실패: RLS 정책으로 인해 업로드가 거부되었습니다. ${bucketName} 버킷의 RLS 정책을 확인하세요.`)
         } else if (error.message.includes('already exists')) {
           // 파일이 이미 존재하는 경우 (재시도)
           const retryFileName = `test-retry-${Date.now()}.txt`
           const { data: retryData, error: retryError } = await supabase.storage
-            .from('test')
+            .from(bucketName)
             .upload(retryFileName, testFile)
-          
+
           if (retryError) {
             throw retryError
           } else {
             setStorageStatus('success')
             setStorageResult(`✅ 파일 업로드 성공! 파일명: ${retryFileName}`)
-            await supabase.storage.from('test').remove([retryFileName])
+            await supabase.storage.from(bucketName).remove([retryFileName])
           }
         } else {
           throw error
@@ -220,10 +220,10 @@ export default function SupabaseTestPage() {
       } else {
         setStorageStatus('success')
         setStorageResult(`✅ 파일 업로드 성공! 파일명: ${fileName}`)
-        
+
         // 업로드한 파일 삭제 (정리)
         try {
-          await supabase.storage.from('test').remove([fileName])
+          await supabase.storage.from(bucketName).remove([fileName])
           setStorageResult(`✅ 파일 업로드 성공! 파일명: ${fileName} (테스트 파일은 자동으로 삭제되었습니다)`)
         } catch (deleteError) {
           // 삭제 실패는 무시 (업로드는 성공했으므로)
@@ -457,13 +457,33 @@ export default function SupabaseTestPage() {
                 {storageError}
               </div>
             )}
-            <div className="flex gap-2">
-              <Button onClick={testStorage} disabled={storageStatus === 'testing'}>
-                {storageStatus === 'testing' ? '테스트 중...' : 'Storage 연결 테스트'}
-              </Button>
-              <Button onClick={testFileUpload} disabled={storageStatus === 'testing'} variant="outline">
-                파일 업로드 테스트
-              </Button>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <strong>test 버킷</strong> 테스트 (개발용)
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={() => testStorage('test')} disabled={storageStatus === 'testing'}>
+                    {storageStatus === 'testing' ? '테스트 중...' : 'test 버킷 연결'}
+                  </Button>
+                  <Button onClick={() => testFileUpload('test')} disabled={storageStatus === 'testing'} variant="outline">
+                    test 버킷 업로드
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <strong>thumbnails 버킷</strong> 테스트 (Admin 에디터용)
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={() => testStorage('thumbnails')} disabled={storageStatus === 'testing'}>
+                    {storageStatus === 'testing' ? '테스트 중...' : 'thumbnails 버킷 연결'}
+                  </Button>
+                  <Button onClick={() => testFileUpload('thumbnails')} disabled={storageStatus === 'testing'} variant="outline">
+                    thumbnails 버킷 업로드
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -477,6 +497,8 @@ export default function SupabaseTestPage() {
             <p>• 각 테스트 버튼을 클릭하여 연결 상태를 확인할 수 있습니다.</p>
             <p>• 데이터베이스 테스트는 test_table이 없어도 연결은 확인됩니다.</p>
             <p>• Storage 테스트는 버킷이 없어도 연결은 확인됩니다.</p>
+            <p>• <strong>thumbnails 버킷</strong>은 Admin 에디터에서 이미지 업로드에 사용됩니다.</p>
+            <p>• RLS 에러가 발생하면 <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">docs/admin-storage-rls-guide.md</code>를 참고하세요.</p>
             <p>• 실제 테이블이나 버킷을 생성하려면 Supabase 대시보드를 사용하세요.</p>
           </CardContent>
         </Card>

@@ -1,114 +1,64 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { ArchiveContent } from "@/components/archive-content"
 import { RelatedProjectsSection } from "@/components/related-projects-section"
-import { mockProjects } from "@/components/mock/projects"
+import { getArchiveById, incrementViewCount } from "@/lib/supabase-archive"
+import type { Archive } from "@/types/archive"
 
 export function ProjectContent({ id }: { id?: string }) {
-  // URL 파라미터에서 id를 받거나 기본값 사용
-  const projectId = id || "ai-content"
-  const project = mockProjects.find((p) => p.id === projectId)
-  
-  if (!project) {
-    console.warn(`Project with id "${projectId}" not found. Available ids:`, mockProjects.map(p => p.id))
+  const [project, setProject] = useState<Archive | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchProject() {
+      if (!id) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getArchiveById(id)
+        setProject(data)
+
+        // 조회수 증가
+        if (data) {
+          incrementViewCount(id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch project:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProject()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
+        <p>로딩 중...</p>
+      </div>
+    )
   }
-  
-  const displayProject = project || mockProjects[0]
+
+  if (!project) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
+        <p>프로젝트를 찾을 수 없습니다.</p>
+      </div>
+    )
+  }
 
   return (
-    <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
-      {/* Date */}
-      <div className="text-sm text-gray-500 mb-6">{displayProject.date || "2024년 3월 15일"} · {displayProject.category}</div>
-
-      {/* Title */}
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-8 leading-tight text-balance">
-        {displayProject.title}
-      </h1>
-
-      {/* Categories Section with Stats */}
-      <div className="mb-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex-1">
-            <h3 className="text-sm font-medium text-gray-900 mb-4">카테고리</h3>
-            {displayProject.tags && displayProject.tags.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {displayProject.tags.map((tag, index) => (
-                  <Badge key={index} className="bg-black text-white border-transparent" size="md">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          
-          {/* Stats */}
-          {(displayProject.difficulty || displayProject.viewCount !== undefined || displayProject.commentCount !== undefined) && (
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-              {displayProject.difficulty && (
-                <>
-                  <div>
-                    <span className="font-medium">난이도:</span> {displayProject.difficulty}
-                  </div>
-                  {(displayProject.viewCount !== undefined || displayProject.commentCount !== undefined) && (
-                    <span className="text-gray-300">·</span>
-                  )}
-                </>
-              )}
-              {displayProject.viewCount !== undefined && (
-                <>
-                  <div>
-                    <span className="font-medium">조회수:</span> {displayProject.viewCount.toLocaleString()}
-                  </div>
-                  {displayProject.commentCount !== undefined && (
-                    <span className="text-gray-300">·</span>
-                  )}
-                </>
-              )}
-              {displayProject.commentCount !== undefined && (
-                <div>
-                  <span className="font-medium">댓글:</span> {displayProject.commentCount}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* CTA Buttons */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
-        <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6 py-3 text-sm font-medium">
-          프로젝트 시작하기
-        </Button>
-        <button className="flex items-center gap-2 text-sm text-black hover:underline">
-          데모 보기
-          <span className="text-gray-400">→</span>
-        </button>
-      </div>
-
-      {/* Project Image */}
-      <div className="mb-16 bg-gray-100 rounded-2xl overflow-hidden">
-        <div className="aspect-video">
-          <img src={displayProject.image} alt={displayProject.title} className="w-full h-full object-cover" />
-        </div>
-      </div>
-
-      {/* Content */}
-      {displayProject.content ? (
-        <div 
-          className="space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div]:my-12 [&_div]:rounded-2xl [&_div]:overflow-hidden [&_img]:w-full [&_img]:h-auto"
-          dangerouslySetInnerHTML={{ __html: displayProject.content }}
-        />
-      ) : (
-        <div className="space-y-8">
-          <p className="text-lg text-gray-700 leading-relaxed">
-            {displayProject.description}
-          </p>
-        </div>
-      )}
-
-      {/* Related Projects Section */}
-      <RelatedProjectsSection />
-    </article>
+    <ArchiveContent
+      archive={project}
+      ctaButtons={{
+        primary: "프로젝트 시작하기",
+        secondary: "데모 보기"
+      }}
+      relatedSection={<RelatedProjectsSection />}
+    />
   )
 }

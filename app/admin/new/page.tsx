@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AdvancedEditor } from "@/components/admin/advanced-editor"
 import { TagInput } from "@/components/admin/tag-input"
 import { toast } from "sonner"
+import { createArchive } from "@/lib/supabase-archive"
 import {
   Dialog,
   DialogContent,
@@ -49,28 +50,33 @@ export default function NewPostPage() {
     }
 
     try {
-      // TODO: Supabase에 저장
+      // Supabase에 저장
       const archiveData = {
+        id: `${Date.now()}-${Math.random().toString(36).substring(7)}`, // 고유 ID 생성
         title,
         category,
-        field,
-        labels,
+        sub_category: field,
+        tags: labels,
         technologies,
         difficulty,
         content,
         author,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        date: new Date().toLocaleDateString("ko-KR"),
+        status: "published" as const,
       }
 
-      console.log("저장할 데이터:", archiveData)
+      const result = await createArchive(archiveData)
 
-      toast.success("아카이브가 저장되었습니다!")
+      if (result) {
+        toast.success("아카이브가 저장되었습니다!")
 
-      // 목록으로 이동
-      setTimeout(() => {
-        router.push("/admin")
-      }, 1000)
+        // 목록으로 이동
+        setTimeout(() => {
+          router.push("/admin")
+        }, 1000)
+      } else {
+        toast.error("저장에 실패했습니다")
+      }
     } catch (error) {
       console.error("저장 실패:", error)
       toast.error("저장에 실패했습니다")

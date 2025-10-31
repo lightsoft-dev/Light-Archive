@@ -1,19 +1,39 @@
 "use client"
 
-import { useState, useMemo, Suspense } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
-import { mockProjects } from "@/components/mock/projects"
+import { getProjects } from "@/lib/supabase-archive"
+import { getArchiveThumbnail } from "@/lib/utils"
+import type { Archive } from "@/types/archive"
 import { BlogSection, type BlogItem } from "@/components/ui/blog-section"
 
 function ProjectsContent() {
   const searchParams = useSearchParams()
   const category = searchParams.get("category") || "all"
 
+  // Supabase에서 데이터 가져오기
+  const [projects, setProjects] = useState<Archive[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const data = await getProjects()
+        setProjects(data)
+      } catch (error) {
+        console.error("Failed to fetch projects:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
+
   // 카테고리별 필터링
   const filteredProjects = useMemo(() => {
-    if (category === "all") return mockProjects
+    if (category === "all") return projects
     
     // 카테고리 매핑 (tags 기반으로 필터링)
     const categoryMap: Record<string, string[]> = {
@@ -23,38 +43,40 @@ function ProjectsContent() {
     }
     
     const keywords = categoryMap[category]
-    if (!keywords) return mockProjects
-    
-    return mockProjects.filter((project) => {
+    if (!keywords) return projects
+
+    return projects.filter((project) => {
       // tags나 technologies에서 키워드 검색
       const allText = [
         ...(project.tags || []),
         ...(project.technologies || []),
         project.title,
-        project.description,
+        project.description || "",
       ].join(" ").toLowerCase()
-      
-      return keywords.some((keyword) => 
+
+      return keywords.some((keyword) =>
         allText.includes(keyword.toLowerCase())
       )
     })
-  }, [category])
+  }, [projects, category])
 
   // 프로젝트 데이터를 BlogItem 형식으로 변환
   const blogItems: BlogItem[] = filteredProjects.map((project) => ({
     id: project.id,
     title: project.title,
     slug: `/projects/${project.id}`,
-    description: project.description,
-    image: project.image.startsWith('/') 
-      ? project.image 
-      : `https://images.unsplash.com/photo-1558655146-364adaf1fcc9?w=640&h=360&fit=crop`,
+    description: project.description || "",
+    image: getArchiveThumbnail(project),
     createdAt: project.date || "날짜 없음",
     author: "팀",
     readTime: project.difficulty || "5분 읽기",
-    viewCount: project.viewCount,
-    commentCount: project.commentCount,
+    viewCount: project.view_count,
+    commentCount: project.comment_count,
   }))
+
+  if (loading) {
+    return <div className="container mx-auto max-w-5xl px-6 py-12">로딩 중...</div>
+  }
 
   const categoryLabels: Record<string, string> = {
     all: "전체",
@@ -95,7 +117,7 @@ export default function ProjectsPage() {
         />
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col transition-all duration-300">
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1">

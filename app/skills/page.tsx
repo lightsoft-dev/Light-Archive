@@ -1,19 +1,39 @@
 "use client"
 
-import { useState, useMemo, Suspense } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
-import { mockSkills } from "@/components/mock/skills"
+import { getSkills } from "@/lib/supabase-archive"
+import { getArchiveThumbnail } from "@/lib/utils"
+import type { Archive } from "@/types/archive"
 import { BlogSection, type BlogItem } from "@/components/ui/blog-section"
 
 function SkillsContent() {
   const searchParams = useSearchParams()
   const category = searchParams.get("category") || "all"
 
+  // Supabase에서 데이터 가져오기
+  const [skills, setSkills] = useState<Archive[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchSkills() {
+      try {
+        const data = await getSkills()
+        setSkills(data)
+      } catch (error) {
+        console.error("Failed to fetch skills:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSkills()
+  }, [])
+
   // 카테고리별 필터링
   const filteredSkills = useMemo(() => {
-    if (category === "all") return mockSkills
+    if (category === "all") return skills
 
     // 카테고리 매핑
     const categoryMap: Record<string, string> = {
@@ -22,24 +42,28 @@ function SkillsContent() {
     }
 
     const targetCategory = categoryMap[category]
-    if (!targetCategory) return mockSkills
+    if (!targetCategory) return skills
 
-    return mockSkills.filter((skill) => skill.subCategory === targetCategory)
-  }, [category])
+    return skills.filter((skill) => skill.sub_category === targetCategory)
+  }, [skills, category])
 
   // 스킬 데이터를 BlogItem 형식으로 변환
   const blogItems: BlogItem[] = filteredSkills.map((skill) => ({
     id: skill.id,
     title: skill.title,
     slug: `/skills/${skill.id}`,
-    description: skill.description,
-    image: skill.image || `https://images.unsplash.com/photo-1558655146-364adaf1fcc9?w=640&h=360&fit=crop`,
+    description: skill.description || "",
+    image: getArchiveThumbnail(skill),
     createdAt: skill.date || "날짜 없음",
     author: "팀",
     readTime: skill.difficulty || "5분 읽기",
-    viewCount: skill.viewCount,
-    commentCount: skill.commentCount,
+    viewCount: skill.view_count,
+    commentCount: skill.comment_count,
   }))
+
+  if (loading) {
+    return <div className="container mx-auto max-w-5xl px-6 py-12">로딩 중...</div>
+  }
 
   const categoryLabels: Record<string, string> = {
     all: "전체",
@@ -79,7 +103,7 @@ export default function SkillsPage() {
         />
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col transition-all duration-300">
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1">

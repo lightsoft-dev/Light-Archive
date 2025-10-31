@@ -124,7 +124,7 @@ export function BlogSection({
             <Link
               href={blog.slug}
               key={blog.id}
-              className="group hover:bg-accent/60 active:bg-accent flex flex-col gap-2 rounded-lg p-2 duration-75"
+              className="group hover:bg-gray-50 active:bg-gray-100 flex flex-col gap-2 rounded-lg p-2 duration-75 transition-colors"
             >
               <LazyImage
                 src={blog.image}
@@ -142,7 +142,7 @@ export function BlogSection({
                   <div className="bg-muted-foreground size-1 rounded-full" />
                   <p>{blog.readTime}</p>
                 </div>
-                <h2 className="line-clamp-2 text-lg leading-5 font-semibold tracking-tight">
+                <h2 className="line-clamp-2 text-lg leading-5 font-semibold tracking-tight text-black">
                   {blog.title}
                 </h2>
                 <p className="text-muted-foreground line-clamp-3 text-sm">
@@ -158,7 +158,7 @@ export function BlogSection({
             <Link
               href={blog.slug}
               key={blog.id}
-              className="group hover:bg-accent/60 active:bg-accent flex gap-3 rounded-lg p-3 duration-75 border border-transparent hover:border-border"
+              className="group hover:bg-gray-50 active:bg-gray-100 flex gap-3 rounded-lg p-3 duration-75 transition-colors border border-transparent hover:border-gray-200"
             >
               <div className="flex-shrink-0 w-32 h-20 overflow-hidden rounded-lg">
                 <LazyImage
@@ -172,7 +172,7 @@ export function BlogSection({
               </div>
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div className="space-y-1">
-                  <h2 className="text-base font-semibold tracking-tight group-hover:text-accent transition-colors line-clamp-1">
+                  <h2 className="text-base font-semibold tracking-tight text-black transition-colors line-clamp-1">
                     {blog.title}
                   </h2>
                   <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">

@@ -27,7 +27,7 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col transition-all duration-300">
         <TopNav onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         <main className="flex-1">
           <ArticleContent />
