@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
 // 환경 변수 확인
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Supabase 클라이언트 생성 (환경 변수가 없으면 빈 문자열로 초기화하여 런타임 에러 방지)
+// Supabase 클라이언트 생성 (환경 변수가 없으면 유효한 형식의 placeholder 사용)
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : createClient('https://placeholder.supabase.co', 'placeholder-key')
+  : createClient('https://placeholder.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDUxOTIwMDAsImV4cCI6MTk2MDc2ODAwMH0.placeholder')
 
 // 환경 변수 확인 헬퍼 함수 (런타임 체크용)
 export function checkSupabaseConfig() {
