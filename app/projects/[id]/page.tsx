@@ -9,7 +9,7 @@ export default function ProjectPage() {
   const id = params?.id as string
 
   return (
-    <ArchiveLayout>
+    <ArchiveLayout archiveId={id}>
       <ProjectContent id={id} />
     </ArchiveLayout>
   )

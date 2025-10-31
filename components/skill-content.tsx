@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { ArchiveContent } from "@/components/archive-content"
-import { RelatedSkillsSection } from "@/components/related-skills-section"
+import { RelatedArchivesSection } from "@/components/related-archives-section"
 import { getArchiveById, incrementViewCount } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
 
@@ -58,7 +58,7 @@ export function SkillContent({ id }: { id?: string }) {
         primary: "시작하기",
         secondary: "예제 코드 보기"
       }}
-      relatedSection={<RelatedSkillsSection currentSkillId={id || ""} />}
+      relatedSection={<RelatedArchivesSection currentArchive={skill} />}
     />
   )
 }

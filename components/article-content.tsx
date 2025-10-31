@@ -1,14 +1,82 @@
 "use client"
 
-import { Play, LinkIcon } from "lucide-react"
+import { Play, LinkIcon, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RelatedProjectsSection } from "@/components/related-projects-section"
 import { mockArticles } from "@/components/mock/articles"
+import { Post } from "@/types/archive"
 
-export function ArticleContent() {
-  // 첫 번째 아티클을 기본으로 사용
+interface ArticleContentProps {
+  selectedPost?: Post | null
+}
+
+export function ArticleContent({ selectedPost }: ArticleContentProps) {
+  // 선택된 포스트가 있으면 그것을 표시, 없으면 첫 번째 아티클을 기본으로 사용
   const article = mockArticles[0]
 
+  const handleScrollDown = () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: 'smooth'
+    })
+  }
+
+  // 검색에서 선택된 포스트가 있으면 해당 포스트 내용 표시
+  if (selectedPost) {
+    return (
+      <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
+        {/* Date & Category */}
+        <div className="text-sm text-gray-500 mb-6">
+          {selectedPost.date} · {selectedPost.category}
+        </div>
+
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-8 leading-tight text-balance">
+          {selectedPost.title}
+        </h1>
+
+        {/* Description */}
+        {selectedPost.description && (
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed">{selectedPost.description}</p>
+        )}
+
+        {/* Tags & Technologies */}
+        {(selectedPost.tags || selectedPost.technologies) && (
+          <div className="flex flex-wrap gap-2 mb-12">
+            {selectedPost.tags?.map((tag, idx) => (
+              <span
+                key={`tag-${idx}`}
+                className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+              >
+                #{tag}
+              </span>
+            ))}
+            {selectedPost.technologies?.map((tech, idx) => (
+              <span
+                key={`tech-${idx}`}
+                className="px-3 py-1 bg-black text-white text-sm rounded-full"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Content */}
+        {selectedPost.content && (
+          <div
+            className="prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: selectedPost.content }}
+          />
+        )}
+
+        {/* Related Projects Section */}
+        <RelatedProjectsSection />
+      </article>
+    )
+  }
+
+  // 기본 아티클 표시
   return (
     <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
       {/* Date */}
@@ -21,11 +89,18 @@ export function ArticleContent() {
 
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
-        <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6 py-3 text-sm font-medium">
+        <Button 
+          className="bg-black text-white hover:bg-gray-800 rounded-full px-6 py-3 text-sm font-medium"
+          onClick={handleScrollDown}
+        >
           아카이브 둘러보기
+          <ChevronDown className="ml-2 w-4 h-4" />
         </Button>
-        <button className="flex items-center gap-2 text-sm text-black hover:underline">
-          관리자 페이지로 이동
+        <button 
+          className="flex items-center gap-2 text-sm text-black hover:underline"
+          onClick={() => window.open('https://lightsoft.dev/', '_blank')}
+        >
+          홈페이지 가기
           <span className="text-gray-400">→</span>
         </button>
       </div>

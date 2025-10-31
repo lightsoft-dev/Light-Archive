@@ -68,12 +68,12 @@ export default function NewPostPage() {
       const result = await createArchive(archiveData)
 
       if (result) {
-        toast.success("아카이브가 저장되었습니다!")
+        toast.success("아카이브가 저장되었습니다! 목록으로 이동합니다...")
 
         // 목록으로 이동
         setTimeout(() => {
           router.push("/admin")
-        }, 1000)
+        }, 1500)
       } else {
         toast.error("저장에 실패했습니다")
       }

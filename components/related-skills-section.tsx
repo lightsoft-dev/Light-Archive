@@ -17,8 +17,8 @@ export function RelatedSkillsSection({ currentSkillId }: { currentSkillId?: stri
         const currentSkill = await getArchiveById(currentSkillId)
         if (!currentSkill) return
 
-        // 관련 스킬 가져오기 (tags 기반)
-        const related = await getRelatedArchives(currentSkillId, currentSkill.tags || [], 4)
+        // 관련 스킬 가져오기 (스마트 추천)
+        const related = await getRelatedArchives(currentSkill, 4)
         setRelatedSkills(related)
       } catch (error) {
         console.error("Failed to fetch related skills:", error)

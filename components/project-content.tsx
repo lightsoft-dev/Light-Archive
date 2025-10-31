@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { ArchiveContent } from "@/components/archive-content"
-import { RelatedProjectsSection } from "@/components/related-projects-section"
+import { RelatedArchivesSection } from "@/components/related-archives-section"
 import { getArchiveById, incrementViewCount } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
 
@@ -58,7 +58,7 @@ export function ProjectContent({ id }: { id?: string }) {
         primary: "프로젝트 시작하기",
         secondary: "데모 보기"
       }}
-      relatedSection={<RelatedProjectsSection />}
+      relatedSection={<RelatedArchivesSection currentArchive={project} />}
     />
   )
 }

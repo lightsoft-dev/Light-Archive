@@ -171,10 +171,10 @@ export default function AdminPage() {
       ),
     },
     {
-      accessorKey: "subCategory",
+      accessorKey: "sub_category",
       header: "분야",
       cell: ({ row }) => {
-        const subCategory = row.getValue("subCategory") as string | undefined
+        const subCategory = row.getValue("sub_category") as string | undefined
         return <div className="text-sm text-gray-600">{subCategory || "-"}</div>
       },
     },
@@ -210,10 +210,18 @@ export default function AdminPage() {
       },
     },
     {
-      accessorKey: "viewCount",
+      accessorKey: "author",
+      header: "작성자",
+      cell: ({ row }) => {
+        const author = row.getValue("author") as string | undefined
+        return <div className="text-sm text-gray-600">{author || "-"}</div>
+      },
+    },
+    {
+      accessorKey: "view_count",
       header: "조회",
       cell: ({ row }) => {
-        const viewCount = row.getValue("viewCount") as number | undefined
+        const viewCount = row.getValue("view_count") as number | undefined
         return <div className="text-sm text-gray-600">{viewCount !== undefined ? viewCount.toLocaleString() : "-"}</div>
       },
     },

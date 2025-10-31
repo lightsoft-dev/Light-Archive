@@ -11,7 +11,7 @@ export interface BaseArchive {
   title: string
   description?: string // Optional로 변경
   category: string
-  subCategory?: string
+  sub_category?: string // DB 필드명과 일치
   status?: ArchiveStatus
 
   // 메타데이터
@@ -27,8 +27,8 @@ export interface BaseArchive {
   thumbnail_url?: string
 
   // 통계
-  viewCount?: number
-  commentCount?: number
+  view_count?: number // DB 필드명과 일치
+  comment_count?: number // DB 필드명과 일치
 
   // 컨텐츠
   content?: string // Rich text HTML content
@@ -57,7 +57,7 @@ export interface Project extends BaseArchive {
 export interface Skill extends BaseArchive {
   category: "기술"
   description: string // 스킬은 설명 필수
-  subCategory?: "클로드 코드" | "인공지능 활용" | string
+  sub_category?: "클로드 코드" | "인공지능 활용" | string
 }
 
 /**

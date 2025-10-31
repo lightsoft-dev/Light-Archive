@@ -9,7 +9,7 @@ export default function SkillPage() {
   const id = params?.id as string
 
   return (
-    <ArchiveLayout>
+    <ArchiveLayout archiveId={id}>
       <SkillContent id={id} />
     </ArchiveLayout>
   )

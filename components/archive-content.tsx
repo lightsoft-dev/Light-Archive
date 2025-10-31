@@ -73,31 +73,31 @@ export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveC
           </div>
 
           {/* Stats */}
-          {(archive.difficulty || archive.viewCount !== undefined || archive.commentCount !== undefined) && (
+          {(archive.difficulty || archive.view_count !== undefined || archive.comment_count !== undefined) && (
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
               {archive.difficulty && (
                 <>
                   <div>
                     <span className="font-medium">난이도:</span> {archive.difficulty}
                   </div>
-                  {(archive.viewCount !== undefined || archive.commentCount !== undefined) && (
+                  {(archive.view_count !== undefined || archive.comment_count !== undefined) && (
                     <span className="text-gray-300">·</span>
                   )}
                 </>
               )}
-              {archive.viewCount !== undefined && (
+              {archive.view_count !== undefined && (
                 <>
                   <div>
-                    <span className="font-medium">조회수:</span> {archive.viewCount.toLocaleString()}
+                    <span className="font-medium">조회수:</span> {archive.view_count.toLocaleString()}
                   </div>
-                  {archive.commentCount !== undefined && (
+                  {archive.comment_count !== undefined && (
                     <span className="text-gray-300">·</span>
                   )}
                 </>
               )}
-              {archive.commentCount !== undefined && (
+              {archive.comment_count !== undefined && (
                 <div>
-                  <span className="font-medium">댓글:</span> {archive.commentCount}
+                  <span className="font-medium">댓글:</span> {archive.comment_count}
                 </div>
               )}
             </div>

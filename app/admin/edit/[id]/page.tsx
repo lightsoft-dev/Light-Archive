@@ -118,10 +118,10 @@ export default function EditPostPage() {
       const result = await updateArchive(postId, updates)
 
       if (result) {
-        toast.success("아카이브가 저장되었습니다!")
+        toast.success("아카이브가 저장되었습니다! 목록으로 이동합니다...")
         setTimeout(() => {
           router.push("/admin")
-        }, 1000)
+        }, 1500)
       } else {
         toast.error("저장에 실패했습니다")
       }
@@ -137,10 +137,10 @@ export default function EditPostPage() {
       const success = await deleteArchive(postId)
 
       if (success) {
-        toast.success("아카이브가 삭제되었습니다")
+        toast.success("아카이브가 삭제되었습니다! 목록으로 이동합니다...")
         setTimeout(() => {
           router.push("/admin")
-        }, 1000)
+        }, 1500)
       } else {
         toast.error("삭제에 실패했습니다")
       }

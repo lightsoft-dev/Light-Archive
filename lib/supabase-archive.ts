@@ -134,7 +134,7 @@ export async function searchArchives(query: string): Promise<Archive[]> {
 /**
  * 아카이브 생성
  */
-export async function createArchive(archive: Omit<Archive, "id" | "created_at" | "updated_at">): Promise<Archive | null> {
+export async function createArchive(archive: Omit<Archive, "created_at" | "updated_at">): Promise<Archive | null> {
   const { data, error } = await supabase
     .from("archive_items")
     .insert([archive])
@@ -235,9 +235,95 @@ export async function getRecentArchives(limit: number = 5): Promise<Archive[]> {
 }
 
 /**
- * 관련 아카이브 가져오기 (같은 태그 기반)
+ * 관련 아카이브 가져오기 (스마트 추천)
+ *
+ * 추천 우선순위:
+ * 1. 같은 카테고리
+ * 2. 태그가 2개 이상 겹침 (높은 관련성)
+ * 3. 태그가 1개 이상 겹침 (보통 관련성)
+ * 4. 같은 기술 스택 사용
+ * 5. 최신순
  */
 export async function getRelatedArchives(
+  currentArchive: Archive,
+  limit: number = 5
+): Promise<Archive[]> {
+  try {
+    // 1. 같은 카테고리 + 태그 겹침이 있는 아카이브 찾기
+    const tags = currentArchive.tags || []
+    const technologies = currentArchive.technologies || []
+
+    if (tags.length === 0 && technologies.length === 0) {
+      // 태그와 기술이 없으면 같은 카테고리의 최신 아카이브 반환
+      const { data, error } = await supabase
+        .from("archive_items")
+        .select("*")
+        .eq("category", currentArchive.category)
+        .neq("id", currentArchive.id)
+        .order("created_at", { ascending: false })
+        .limit(limit)
+
+      if (error) throw error
+      return data || []
+    }
+
+    // 2. 태그 또는 기술 스택이 겹치는 아카이브 찾기
+    const { data: allCandidates, error } = await supabase
+      .from("archive_items")
+      .select("*")
+      .neq("id", currentArchive.id)
+      .order("created_at", { ascending: false })
+      .limit(50) // 충분한 후보군 확보
+
+    if (error) throw error
+    if (!allCandidates || allCandidates.length === 0) return []
+
+    // 3. 관련성 점수 계산
+    const scoredArchives = allCandidates.map((archive) => {
+      let score = 0
+
+      // 같은 카테고리: +10점
+      if (archive.category === currentArchive.category) {
+        score += 10
+      }
+
+      // 태그 겹침 계산
+      const archiveTags = archive.tags || []
+      const commonTags = tags.filter((tag) => archiveTags.includes(tag))
+      score += commonTags.length * 5 // 태그 하나당 +5점
+
+      // 기술 스택 겹침 계산
+      const archiveTech = archive.technologies || []
+      const commonTech = technologies.filter((tech) => archiveTech.includes(tech))
+      score += commonTech.length * 3 // 기술 하나당 +3점
+
+      // 조회수 보너스 (인기있는 글)
+      if (archive.view_count && archive.view_count > 100) {
+        score += 2
+      }
+
+      return { archive, score }
+    })
+
+    // 4. 점수순으로 정렬하고 상위 N개 반환
+    const topRelated = scoredArchives
+      .filter((item) => item.score > 0) // 관련성이 있는 것만
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((item) => item.archive)
+
+    return topRelated
+  } catch (error) {
+    console.error("Error fetching related archives:", error)
+    return []
+  }
+}
+
+/**
+ * 태그 기반 관련 아카이브 가져오기 (레거시 - 하위 호환성)
+ * @deprecated getRelatedArchives(currentArchive, limit) 사용 권장
+ */
+export async function getRelatedArchivesByTags(
   currentId: string,
   tags: string[],
   limit: number = 3
