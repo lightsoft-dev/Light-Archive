@@ -1,38 +1,11 @@
 "use client"
 
 import Link from "next/link"
+import { mockProjects } from "@/components/mock/projects"
 
 export function RelatedProjectsSection() {
-  const projects = [
-    {
-      id: "1",
-      title: "AI 챗봇 플랫폼",
-      description: "고객 서비스를 위한 지능형 챗봇 솔루션",
-      image: "/ai-chatbot-interface-icon.jpg",
-      category: "프로젝트",
-    },
-    {
-      id: "2",
-      title: "데이터 분석 대시보드",
-      description: "실시간 데이터 시각화 및 인사이트 도구",
-      image: "/data-analytics-dashboard-icon.jpg",
-      category: "프로젝트",
-    },
-    {
-      id: "3",
-      title: "이미지 생성 AI",
-      description: "텍스트로 고품질 이미지를 생성하는 도구",
-      image: "/image-generation-ai-tool-icon.jpg",
-      category: "프로젝트",
-    },
-    {
-      id: "4",
-      title: "음성 비서 시스템",
-      description: "자연스러운 대화가 가능한 음성 AI",
-      image: "/voice-assistant-ai-icon.jpg",
-      category: "프로젝트",
-    },
-  ]
+  // 최대 4개까지만 표시
+  const projects = mockProjects.slice(0, 4)
 
   return (
     <div className="mt-16 pt-8 border-t border-gray-200">

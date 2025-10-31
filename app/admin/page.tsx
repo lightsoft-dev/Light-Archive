@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal, Plus, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -40,80 +41,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { RichTextEditor } from "@/components/admin/rich-text-editor"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
-export type Post = {
-  id: string
-  title: string
-  category: string
-  date: string
-  status: "published" | "draft" | "archived"
-  content?: string
-}
-
-const data: Post[] = [
-  {
-    id: "1",
-    title: "ChatGPT 소개",
-    category: "AI",
-    date: "2024년 1월 15일",
-    status: "published",
-    content: "<p>ChatGPT는 OpenAI가 개발한 대규모 언어 모델입니다.</p>",
-  },
-  {
-    id: "2",
-    title: "AI의 미래",
-    category: "Technology",
-    date: "2024년 1월 10일",
-    status: "published",
-    content: "<p>인공지능 기술은 빠르게 발전하고 있습니다.</p>",
-  },
-  {
-    id: "3",
-    title: "머신러닝 기초",
-    category: "AI",
-    date: "2024년 1월 5일",
-    status: "draft",
-    content: "<p>머신러닝은 데이터로부터 학습하는 기술입니다.</p>",
-  },
-  {
-    id: "4",
-    title: "딥러닝 알고리즘",
-    category: "Technology",
-    date: "2023년 12월 20일",
-    status: "published",
-    content: "<p>딥러닝은 신경망을 활용한 학습 방법입니다.</p>",
-  },
-  {
-    id: "5",
-    title: "자연어 처리",
-    category: "AI",
-    date: "2023년 12월 15일",
-    status: "archived",
-    content: "<p>자연어 처리는 컴퓨터가 인간의 언어를 이해하는 기술입니다.</p>",
-  },
-]
+import { mockProjects } from "@/components/mock/projects"
+import { mockSkills } from "@/components/mock/skills"
+import type { Archive } from "@/types/archive"
 
 export default function AdminPage() {
+  const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = React.useState(false)
   const [loginOpen, setLoginOpen] = React.useState(false)
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [loginError, setLoginError] = React.useState("")
-  const [posts, setPosts] = React.useState<Post[]>(data)
-  const [editingPost, setEditingPost] = React.useState<Post | null>(null)
-  const [editDialogOpen, setEditDialogOpen] = React.useState(false)
-  const [editTitle, setEditTitle] = React.useState("")
-  const [editCategory, setEditCategory] = React.useState("")
-  const [editStatus, setEditStatus] = React.useState<"published" | "draft" | "archived">("draft")
-  const [editContent, setEditContent] = React.useState("")
+
+  // Projects와 Skills를 통합
+  const allArchives: Archive[] = [...mockProjects, ...mockSkills]
+  const [archives, setArchives] = React.useState<Archive[]>(allArchives)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -134,45 +77,17 @@ export default function AdminPage() {
     }
   }
 
-  const handleEdit = (post: Post) => {
-    setEditingPost(post)
-    setEditTitle(post.title)
-    setEditCategory(post.category)
-    setEditStatus(post.status)
-    setEditContent(post.content || "")
-    setEditDialogOpen(true)
+  const handleEdit = (archive: Archive) => {
+    // 수정 페이지로 이동
+    router.push(`/admin/edit/${archive.id}`)
   }
 
-  const handleSaveEdit = () => {
-    if (!editingPost) return
-
-    const updatedPosts = posts.map((post) =>
-      post.id === editingPost.id
-        ? {
-            ...post,
-            title: editTitle,
-            category: editCategory,
-            status: editStatus,
-            content: editContent,
-          }
-        : post
-    )
-
-    setPosts(updatedPosts)
-    setEditDialogOpen(false)
-    setEditingPost(null)
-    setEditTitle("")
-    setEditCategory("")
-    setEditStatus("draft")
-    setEditContent("")
+  const handleDelete = (archiveId: string) => {
+    const updatedArchives = archives.filter((archive) => archive.id !== archiveId)
+    setArchives(updatedArchives)
   }
 
-  const handleDelete = (postId: string) => {
-    const updatedPosts = posts.filter((post) => post.id !== postId)
-    setPosts(updatedPosts)
-  }
-
-  const columns: ColumnDef<Post>[] = [
+  const columns: ColumnDef<Archive>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -202,45 +117,80 @@ export default function AdminPage() {
           </Button>
         )
       },
-      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
+      cell: ({ row }) => <div className="font-medium max-w-xs truncate">{row.getValue("title")}</div>,
     },
     {
       accessorKey: "category",
       header: "카테고리",
-      cell: ({ row }) => <div className="capitalize">{row.getValue("category")}</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+            row.getValue("category") === "프로젝트"
+              ? "bg-blue-50 text-blue-700"
+              : "bg-purple-50 text-purple-700"
+          }`}>
+            {row.getValue("category")}
+          </span>
+        </div>
+      ),
     },
     {
-      accessorKey: "date",
-      header: "날짜",
-      cell: ({ row }) => <div>{row.getValue("date")}</div>,
-    },
-    {
-      accessorKey: "status",
-      header: "상태",
+      accessorKey: "subCategory",
+      header: "분야",
       cell: ({ row }) => {
-        const status = row.getValue("status") as string
+        const subCategory = row.getValue("subCategory") as string | undefined
+        return <div className="text-sm text-gray-600">{subCategory || "-"}</div>
+      },
+    },
+    {
+      accessorKey: "tags",
+      header: "태그",
+      cell: ({ row }) => {
+        const tags = row.getValue("tags") as string[] | undefined
         return (
-          <div className="flex items-center">
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                status === "published"
-                  ? "bg-green-50 text-green-700"
-                  : status === "draft"
-                    ? "bg-yellow-50 text-yellow-700"
-                    : "bg-gray-50 text-gray-700"
-              }`}
-            >
-              {status === "published" ? "게시됨" : status === "draft" ? "초안" : "보관됨"}
-            </span>
+          <div className="flex flex-wrap gap-1 max-w-xs">
+            {tags && tags.length > 0 ? (
+              tags.slice(0, 2).map((tag, idx) => (
+                <span key={idx} className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                  {tag}
+                </span>
+              ))
+            ) : (
+              <span className="text-sm text-gray-400">-</span>
+            )}
+            {tags && tags.length > 2 && (
+              <span className="text-xs text-gray-500">+{tags.length - 2}</span>
+            )}
           </div>
         )
       },
     },
     {
+      accessorKey: "difficulty",
+      header: "난이도",
+      cell: ({ row }) => {
+        const difficulty = row.getValue("difficulty") as string | undefined
+        return <div className="text-sm">{difficulty || "-"}</div>
+      },
+    },
+    {
+      accessorKey: "viewCount",
+      header: "조회",
+      cell: ({ row }) => {
+        const viewCount = row.getValue("viewCount") as number | undefined
+        return <div className="text-sm text-gray-600">{viewCount !== undefined ? viewCount.toLocaleString() : "-"}</div>
+      },
+    },
+    {
+      accessorKey: "date",
+      header: "날짜",
+      cell: ({ row }) => <div className="text-sm text-gray-600">{row.getValue("date") || "-"}</div>,
+    },
+    {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const post = row.original
+        const archive = row.original
 
         return (
           <DropdownMenu>
@@ -252,10 +202,10 @@ export default function AdminPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>작업</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(post.id)}>ID 복사</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(archive.id)}>ID 복사</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleEdit(post)}>수정</DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(post.id)}>
+              <DropdownMenuItem onClick={() => handleEdit(archive)}>수정</DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(archive.id)}>
                 삭제
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -266,7 +216,7 @@ export default function AdminPage() {
   ]
 
   const table = useReactTable({
-    data: posts,
+    data: archives,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -356,9 +306,11 @@ export default function AdminPage() {
               <h1 className="text-4xl font-semibold">포스트 관리</h1>
               <p className="text-neutral-600 mt-2">블로그 포스트를 관리하고 편집하세요.</p>
             </div>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />새 포스트
-            </Button>
+            <Link href="/admin/new">
+              <Button className="gap-2">
+                <Plus className="w-4 h-4" />새 포스트
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -453,66 +405,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* 수정 다이얼로그 */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>포스트 수정</DialogTitle>
-            <DialogDescription>포스트 정보를 수정하세요.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="edit-title">제목</Label>
-              <Input
-                id="edit-title"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="포스트 제목"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-category">카테고리</Label>
-              <Input
-                id="edit-category"
-                value={editCategory}
-                onChange={(e) => setEditCategory(e.target.value)}
-                placeholder="카테고리"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-status">상태</Label>
-              <Select value={editStatus} onValueChange={(value: "published" | "draft" | "archived") => setEditStatus(value)}>
-                <SelectTrigger id="edit-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="published">게시됨</SelectItem>
-                  <SelectItem value="draft">초안</SelectItem>
-                  <SelectItem value="archived">보관됨</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-content">내용</Label>
-              <RichTextEditor
-                content={editContent}
-                onChange={setEditContent}
-                placeholder="포스트 내용을 입력하세요..."
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                취소
-              </Button>
-            </DialogClose>
-            <Button type="button" onClick={handleSaveEdit}>
-              저장
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

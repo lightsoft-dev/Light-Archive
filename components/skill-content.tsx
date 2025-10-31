@@ -2,28 +2,30 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { RelatedProjectsSection } from "@/components/related-projects-section"
-import { mockProjects } from "@/components/mock/projects"
+import { RelatedSkillsSection } from "@/components/related-skills-section"
+import { mockSkills } from "@/components/mock/skills"
 
-export function ProjectContent({ id }: { id?: string }) {
+export function SkillContent({ id }: { id?: string }) {
   // URL 파라미터에서 id를 받거나 기본값 사용
-  const projectId = id || "ai-content"
-  const project = mockProjects.find((p) => p.id === projectId)
+  const skillId = id || "1"
+  const skill = mockSkills.find((s) => s.id === skillId)
   
-  if (!project) {
-    console.warn(`Project with id "${projectId}" not found. Available ids:`, mockProjects.map(p => p.id))
+  if (!skill) {
+    console.warn(`Skill with id "${skillId}" not found. Available ids:`, mockSkills.map(s => s.id))
   }
   
-  const displayProject = project || mockProjects[0]
+  const displaySkill = skill || mockSkills[0]
 
   return (
     <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
       {/* Date */}
-      <div className="text-sm text-gray-500 mb-6">{displayProject.date || "2024년 3월 15일"} · {displayProject.category}</div>
+      <div className="text-sm text-gray-500 mb-6">
+        {displaySkill.date || "날짜 없음"} · {displaySkill.subCategory || displaySkill.category}
+      </div>
 
       {/* Title */}
       <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-8 leading-tight text-balance">
-        {displayProject.title}
+        {displaySkill.title}
       </h1>
 
       {/* Categories Section with Stats */}
@@ -31,9 +33,9 @@ export function ProjectContent({ id }: { id?: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1">
             <h3 className="text-sm font-medium text-gray-900 mb-4">카테고리</h3>
-            {displayProject.tags && displayProject.tags.length > 0 ? (
+            {displaySkill.tags && displaySkill.tags.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {displayProject.tags.map((tag, index) => (
+                {displaySkill.tags.map((tag, index) => (
                   <Badge key={index} className="bg-black text-white border-transparent" size="md">
                     {tag}
                   </Badge>
@@ -43,31 +45,31 @@ export function ProjectContent({ id }: { id?: string }) {
           </div>
           
           {/* Stats */}
-          {(displayProject.difficulty || displayProject.viewCount !== undefined || displayProject.commentCount !== undefined) && (
+          {(displaySkill.difficulty || displaySkill.viewCount !== undefined || displaySkill.commentCount !== undefined) && (
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-              {displayProject.difficulty && (
+              {displaySkill.difficulty && (
                 <>
                   <div>
-                    <span className="font-medium">난이도:</span> {displayProject.difficulty}
+                    <span className="font-medium">난이도:</span> {displaySkill.difficulty}
                   </div>
-                  {(displayProject.viewCount !== undefined || displayProject.commentCount !== undefined) && (
+                  {(displaySkill.viewCount !== undefined || displaySkill.commentCount !== undefined) && (
                     <span className="text-gray-300">·</span>
                   )}
                 </>
               )}
-              {displayProject.viewCount !== undefined && (
+              {displaySkill.viewCount !== undefined && (
                 <>
                   <div>
-                    <span className="font-medium">조회수:</span> {displayProject.viewCount.toLocaleString()}
+                    <span className="font-medium">조회수:</span> {displaySkill.viewCount.toLocaleString()}
                   </div>
-                  {displayProject.commentCount !== undefined && (
+                  {displaySkill.commentCount !== undefined && (
                     <span className="text-gray-300">·</span>
                   )}
                 </>
               )}
-              {displayProject.commentCount !== undefined && (
+              {displaySkill.commentCount !== undefined && (
                 <div>
-                  <span className="font-medium">댓글:</span> {displayProject.commentCount}
+                  <span className="font-medium">댓글:</span> {displaySkill.commentCount}
                 </div>
               )}
             </div>
@@ -78,37 +80,40 @@ export function ProjectContent({ id }: { id?: string }) {
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
         <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6 py-3 text-sm font-medium">
-          프로젝트 시작하기
+          시작하기
         </Button>
         <button className="flex items-center gap-2 text-sm text-black hover:underline">
-          데모 보기
+          예제 코드 보기
           <span className="text-gray-400">→</span>
         </button>
       </div>
 
-      {/* Project Image */}
-      <div className="mb-16 bg-gray-100 rounded-2xl overflow-hidden">
-        <div className="aspect-video">
-          <img src={displayProject.image} alt={displayProject.title} className="w-full h-full object-cover" />
+      {/* Skill Image */}
+      {displaySkill.image && (
+        <div className="mb-16 bg-gray-100 rounded-2xl overflow-hidden">
+          <div className="aspect-video">
+            <img src={displaySkill.image} alt={displaySkill.title} className="w-full h-full object-cover" />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
-      {displayProject.content ? (
+      {displaySkill.content ? (
         <div 
           className="space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div]:my-12 [&_div]:rounded-2xl [&_div]:overflow-hidden [&_img]:w-full [&_img]:h-auto"
-          dangerouslySetInnerHTML={{ __html: displayProject.content }}
+          dangerouslySetInnerHTML={{ __html: displaySkill.content }}
         />
       ) : (
         <div className="space-y-8">
           <p className="text-lg text-gray-700 leading-relaxed">
-            {displayProject.description}
+            {displaySkill.description}
           </p>
         </div>
       )}
 
-      {/* Related Projects Section */}
-      <RelatedProjectsSection />
+      {/* Related Skills Section */}
+      <RelatedSkillsSection currentSkillId={skillId} />
     </article>
   )
 }
+

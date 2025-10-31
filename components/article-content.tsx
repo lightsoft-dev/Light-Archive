@@ -3,16 +3,20 @@
 import { Play, LinkIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RelatedProjectsSection } from "@/components/related-projects-section"
+import { mockArticles } from "@/components/mock/articles"
 
 export function ArticleContent() {
+  // 첫 번째 아티클을 기본으로 사용
+  const article = mockArticles[0]
+
   return (
     <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
       {/* Date */}
-      <div className="text-sm text-gray-500 mb-6">2024년 12월 · 제품</div>
+      <div className="text-sm text-gray-500 mb-6">{article.date} · {article.category}</div>
 
       {/* Title */}
       <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-black mb-8 leading-tight text-balance">
-        Light Archive 소개
+        {article.title}
       </h1>
 
       {/* CTA Buttons */}
@@ -48,15 +52,11 @@ export function ArticleContent() {
 
       {/* Content */}
       <div className="space-y-8">
-        <p className="text-lg text-gray-700 leading-relaxed">
-          Light Archive는 AI 기반 기술과 프로젝트 아카이브 플랫폼입니다. 대화 형식을 통해 Light Archive는 복잡한 기술 지식을
-          체계적으로 정리하고, 관련 항목을 자동으로 추천하며, 지식 자산을 효율적으로 관리할 수 있도록 도와줍니다.
-        </p>
-
-        <p className="text-lg text-gray-700 leading-relaxed">
-          Light Archive는 Rich Text와 Markdown을 지원하는 에디터로, 기술 문서와 프로젝트 성과를 쉽게 기록하고 관리할 수 있습니다.
-          AI 기반 초안 생성, 요약, 태그 자동 제안 기능을 통해 콘텐츠 작성의 효율성을 높입니다.
-        </p>
+        {article.content.split('\n\n').map((paragraph, index) => (
+          <p key={index} className="text-lg text-gray-700 leading-relaxed">
+            {paragraph}
+          </p>
+        ))}
 
         <div className="my-12 rounded-2xl overflow-hidden">
           <img src="/modern-ai-interface-dashboard-with-chat-bubbles.jpg" alt="Light Archive Interface" className="w-full h-auto" />

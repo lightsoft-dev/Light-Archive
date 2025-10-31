@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
 import { ArticleContent } from "@/components/article-content"
 import { RelatedProjects } from "@/components/related-projects"
+import { Footerdemo } from "@/components/ui/footer-section"
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -31,6 +32,7 @@ export default function Home() {
         <main className="flex-1">
           <ArticleContent />
         </main>
+        <Footerdemo />
       </div>
 
       {/* Related Projects Floating */}

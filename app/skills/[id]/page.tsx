@@ -2,12 +2,12 @@
 
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
-import { ProjectContent } from "@/components/project-content"
+import { SkillContent } from "@/components/skill-content"
 import { RelatedProjects } from "@/components/related-projects"
 import { useState } from "react"
 import { useParams } from "next/navigation"
 
-export default function ProjectPage() {
+export default function SkillPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const params = useParams()
   const id = params?.id as string
@@ -32,10 +32,11 @@ export default function ProjectPage() {
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1 relative">
-          <ProjectContent id={id} />
+          <SkillContent id={id} />
           <RelatedProjects />
         </main>
       </div>
     </div>
   )
 }
+

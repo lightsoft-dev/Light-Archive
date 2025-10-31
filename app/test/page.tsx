@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, supabaseUrl } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,15 +26,45 @@ export default function SupabaseTestPage() {
     setConnectionResult('')
 
     try {
-      // 간단한 헬스 체크 - Supabase 클라이언트가 정상적으로 초기화되었는지 확인
-      const { data, error } = await supabase.from('_test').select('*').limit(0)
+      // 방법 1: Supabase REST API health check를 직접 호출
+      const currentUrl = supabaseUrl
+      const currentKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      const healthCheckUrl = `${currentUrl}/rest/v1/`
+      
+      const healthResponse = await fetch(healthCheckUrl, {
+        method: 'GET',
+        headers: {
+          'apikey': currentKey,
+          'Authorization': `Bearer ${currentKey}`
+        }
+      })
+
+      // HTTP 상태 코드 확인
+      if (healthResponse.ok || healthResponse.status === 404 || healthResponse.status === 406) {
+        // 404나 406도 정상 (엔드포인트가 없어도 서버는 응답함)
+        setConnectionStatus('success')
+        setConnectionResult('✅ Supabase 연결 성공! 서버가 정상적으로 응답했습니다.')
+        return
+      }
+
+      // 방법 2: 존재하지 않는 테이블 쿼리 (연결 테스트용)
+      const { data, error } = await supabase.from('_connection_test_table_that_does_not_exist').select('*').limit(0)
       
       if (error) {
-        // 테이블이 없어도 연결은 정상일 수 있음
-        if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
+        // 테이블이 없어도 연결은 정상 - 다양한 에러 메시지 패턴 확인
+        const isTableNotFoundError = 
+          error.code === 'PGRST116' || 
+          error.message.includes('relation') || 
+          error.message.includes('does not exist') ||
+          error.message.includes('Could not find') ||
+          error.message.includes('schema cache') ||
+          error.message.includes('not found')
+
+        if (isTableNotFoundError) {
           setConnectionStatus('success')
           setConnectionResult('✅ Supabase 연결 성공! (테이블이 없어도 연결은 정상입니다)')
         } else {
+          // 네트워크 오류나 인증 오류인 경우
           throw error
         }
       } else {
@@ -43,8 +73,17 @@ export default function SupabaseTestPage() {
       }
     } catch (error: any) {
       setConnectionStatus('error')
-      setConnectionError(error.message || '연결 실패')
-      setConnectionResult('❌ 연결 실패')
+      const errorMessage = error.message || '연결 실패'
+      setConnectionError(errorMessage)
+      
+      // 구체적인 오류 메시지 제공
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        setConnectionResult('❌ 연결 실패: 네트워크 오류 또는 URL이 잘못되었습니다.')
+      } else if (errorMessage.includes('JWT') || errorMessage.includes('Invalid API key')) {
+        setConnectionResult('❌ 연결 실패: API Key가 잘못되었습니다.')
+      } else {
+        setConnectionResult(`❌ 연결 실패: ${errorMessage}`)
+      }
     }
   }
 
@@ -87,24 +126,47 @@ export default function SupabaseTestPage() {
     setStorageResult('')
 
     try {
-      // 버킷 목록 조회 테스트
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+      // 'test' 버킷에 직접 접근하여 연결 확인
+      // 버킷 목록 조회는 관리자 권한이 필요할 수 있으므로 특정 버킷에 직접 접근
+      const { data: files, error: filesError } = await supabase.storage
+        .from('test')
+        .list('', { limit: 1 })
 
-      if (bucketsError) {
-        throw bucketsError
-      }
-
-      if (buckets && buckets.length > 0) {
-        setStorageStatus('success')
-        setStorageResult(`✅ Storage 연결 성공! ${buckets.length}개의 버킷을 찾았습니다: ${buckets.map(b => b.name).join(', ')}`)
+      if (filesError) {
+        // 에러 타입별 처리
+        if (filesError.message.includes('Bucket not found') || 
+            filesError.message.includes('not found') ||
+            filesError.message.includes('does not exist')) {
+          setStorageStatus('success')
+          setStorageResult('✅ Storage 연결 성공! (test 버킷이 없습니다. Storage에서 버킷을 생성하세요)')
+        } else if (filesError.message.includes('new row violates row-level security') || 
+                   filesError.message.includes('RLS') ||
+                   filesError.message.includes('permission denied') ||
+                   filesError.message.includes('권한')) {
+          setStorageStatus('error')
+          setStorageError('권한 오류: Storage RLS 정책을 확인하세요')
+          setStorageResult('❌ Storage 연결 실패: RLS 정책으로 인해 접근이 거부되었습니다. Storage 정책을 확인하세요.')
+        } else {
+          throw filesError
+        }
       } else {
+        // 성공: 버킷에 접근 가능
+        const fileCount = files?.length || 0
         setStorageStatus('success')
-        setStorageResult('✅ Storage 연결 성공! (버킷이 없습니다. Storage에서 버킷을 생성하세요)')
+        setStorageResult(`✅ Storage 연결 성공! (test 버킷에 접근 가능합니다${fileCount > 0 ? `, ${fileCount}개의 파일/폴더가 있습니다` : ''})`)
       }
     } catch (error: any) {
       setStorageStatus('error')
-      setStorageError(error.message || 'Storage 연결 실패')
-      setStorageResult('❌ Storage 연결 실패')
+      const errorMessage = error.message || 'Storage 연결 실패'
+      setStorageError(errorMessage)
+      
+      if (errorMessage.includes('RLS') || errorMessage.includes('row-level security')) {
+        setStorageResult('❌ Storage 연결 실패: RLS 정책으로 인해 접근이 거부되었습니다')
+      } else if (errorMessage.includes('permission') || errorMessage.includes('권한')) {
+        setStorageResult('❌ Storage 연결 실패: 권한이 없습니다. Storage RLS 정책을 확인하세요')
+      } else {
+        setStorageResult(`❌ Storage 연결 실패: ${errorMessage}`)
+      }
     }
   }
 
@@ -120,15 +182,38 @@ export default function SupabaseTestPage() {
       const testFile = new Blob([testContent], { type: 'text/plain' })
       const fileName = `test-${Date.now()}.txt`
 
-      // 'test' 버킷에 업로드 시도 (버킷이 없으면 에러)
+      // 'test' 버킷에 업로드 시도
       const { data, error } = await supabase.storage
         .from('test')
         .upload(fileName, testFile)
 
       if (error) {
-        if (error.message.includes('Bucket not found')) {
-          setStorageStatus('success')
-          setStorageResult('✅ Storage 연결 성공! (test 버킷이 없습니다. Storage에서 버킷을 생성하세요)')
+        // 에러 타입별 처리
+        if (error.message.includes('Bucket not found') || error.message.includes('not found')) {
+          setStorageStatus('error')
+          setStorageError('test 버킷을 찾을 수 없습니다')
+          setStorageResult('❌ 파일 업로드 실패: test 버킷이 없습니다. Supabase 대시보드에서 버킷을 생성하세요.')
+        } else if (error.message.includes('new row violates row-level security') || 
+                   error.message.includes('RLS') || 
+                   error.message.includes('permission denied') ||
+                   error.message.includes('권한')) {
+          setStorageStatus('error')
+          setStorageError('권한 오류: Storage RLS 정책을 확인하세요')
+          setStorageResult('❌ 파일 업로드 실패: RLS 정책으로 인해 업로드가 거부되었습니다. Storage 정책을 확인하세요.')
+        } else if (error.message.includes('already exists')) {
+          // 파일이 이미 존재하는 경우 (재시도)
+          const retryFileName = `test-retry-${Date.now()}.txt`
+          const { data: retryData, error: retryError } = await supabase.storage
+            .from('test')
+            .upload(retryFileName, testFile)
+          
+          if (retryError) {
+            throw retryError
+          } else {
+            setStorageStatus('success')
+            setStorageResult(`✅ 파일 업로드 성공! 파일명: ${retryFileName}`)
+            await supabase.storage.from('test').remove([retryFileName])
+          }
         } else {
           throw error
         }
@@ -136,13 +221,27 @@ export default function SupabaseTestPage() {
         setStorageStatus('success')
         setStorageResult(`✅ 파일 업로드 성공! 파일명: ${fileName}`)
         
-        // 업로드한 파일 삭제
-        await supabase.storage.from('test').remove([fileName])
+        // 업로드한 파일 삭제 (정리)
+        try {
+          await supabase.storage.from('test').remove([fileName])
+          setStorageResult(`✅ 파일 업로드 성공! 파일명: ${fileName} (테스트 파일은 자동으로 삭제되었습니다)`)
+        } catch (deleteError) {
+          // 삭제 실패는 무시 (업로드는 성공했으므로)
+          console.warn('테스트 파일 삭제 실패:', deleteError)
+        }
       }
     } catch (error: any) {
       setStorageStatus('error')
-      setStorageError(error.message || '파일 업로드 실패')
-      setStorageResult('❌ 파일 업로드 실패')
+      const errorMessage = error.message || '파일 업로드 실패'
+      setStorageError(errorMessage)
+      
+      if (errorMessage.includes('RLS') || errorMessage.includes('row-level security')) {
+        setStorageResult('❌ 파일 업로드 실패: RLS 정책으로 인해 업로드가 거부되었습니다')
+      } else if (errorMessage.includes('permission') || errorMessage.includes('권한')) {
+        setStorageResult('❌ 파일 업로드 실패: 권한이 없습니다. Storage RLS 정책을 확인하세요')
+      } else {
+        setStorageResult(`❌ 파일 업로드 실패: ${errorMessage}`)
+      }
     }
   }
 
@@ -197,28 +296,61 @@ export default function SupabaseTestPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">NEXT_PUBLIC_SUPABASE_URL</span>
-              {process.env.NEXT_PUBLIC_SUPABASE_URL ? (
-                <Badge variant="success" appearance="light">설정됨</Badge>
-              ) : (
-                <Badge variant="destructive" appearance="light">미설정</Badge>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">NEXT_PUBLIC_SUPABASE_URL</span>
+                {process.env.NEXT_PUBLIC_SUPABASE_URL ? (
+                  <Badge variant="success" appearance="light">설정됨</Badge>
+                ) : (
+                  <Badge variant="destructive" appearance="light">미설정</Badge>
+                )}
+              </div>
+              {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+                <div className="text-xs text-gray-500 dark:text-gray-500 font-mono break-all pl-2">
+                  {process.env.NEXT_PUBLIC_SUPABASE_URL}
+                </div>
               )}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>
-              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? (
-                <Badge variant="success" appearance="light">설정됨</Badge>
-              ) : (
-                <Badge variant="destructive" appearance="light">미설정</Badge>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>
+                {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? (
+                  <Badge variant="success" appearance="light">설정됨</Badge>
+                ) : (
+                  <Badge variant="destructive" appearance="light">미설정</Badge>
+                )}
+              </div>
+              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && (
+                <div className="text-xs text-gray-500 dark:text-gray-500 font-mono break-all pl-2">
+                  {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.substring(0, 50)}...
+                </div>
               )}
+            </div>
+            <div className="space-y-1 mt-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Supabase 클라이언트 URL</span>
+                <Badge variant="mono" appearance="light">실제 사용값</Badge>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-500 font-mono break-all pl-2">
+                {supabaseUrl}
+              </div>
             </div>
             {(!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) && (
               <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                   <div className="text-sm text-yellow-800 dark:text-yellow-300">
-                    환경 변수가 설정되지 않았습니다. .env.local 파일을 확인하세요.
+                    환경 변수가 설정되지 않았습니다. .env.local 파일을 확인하고 개발 서버를 재시작하세요.
+                  </div>
+                </div>
+              </div>
+            )}
+            {process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy') && (
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+                  <div className="text-sm text-yellow-800 dark:text-yellow-300">
+                    더미 URL이 사용되고 있습니다. .env.local 파일에 실제 Supabase URL을 설정하세요.
                   </div>
                 </div>
               </div>
@@ -327,7 +459,7 @@ export default function SupabaseTestPage() {
             )}
             <div className="flex gap-2">
               <Button onClick={testStorage} disabled={storageStatus === 'testing'}>
-                {storageStatus === 'testing' ? '테스트 중...' : '버킷 목록 조회'}
+                {storageStatus === 'testing' ? '테스트 중...' : 'Storage 연결 테스트'}
               </Button>
               <Button onClick={testFileUpload} disabled={storageStatus === 'testing'} variant="outline">
                 파일 업로드 테스트

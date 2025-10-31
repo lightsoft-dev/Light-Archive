@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import { mockNavItems } from "@/components/mock/nav-items"
 
 interface SidebarProps {
   isOpen: boolean
@@ -47,55 +48,73 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
 
         <nav className="flex-1 px-4 py-2 overflow-y-auto">
           <div className="space-y-1">
-            <div className="px-3 py-2 text-sm font-medium text-gray-900">리서치</div>
-            <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
-              안전
-            </div>
-            <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
-              비즈니스용
-            </div>
+            {mockNavItems.map((section, sectionIndex) => (
+              <div key={sectionIndex}>
+                {section.title && (
+                  <div className="px-3 py-2 text-sm font-medium text-gray-900">{section.title}</div>
+                )}
+                {section.items.map((item, itemIndex) => {
+                  const hasChildren = item.children && item.children.length > 0
+                  const isProject = item.id === "project"
+                  const isTechnology = item.id === "technology"
+                  const previousItem = section.items[itemIndex - 1]
+                  const shouldAddSpacing = (isTechnology && previousItem?.id === "home") || (isProject && previousItem?.id === "technology")
 
-            <div className="pt-4">
-              <div className="px-3 py-2 text-sm font-medium text-gray-900">개발자</div>
-            </div>
-
-            <Link
-              href="/"
-              className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
-            >
-              ChatGPT
-            </Link>
-            <Link
-              href="/projects/ai-content"
-              className="block px-3 py-2 text-sm text-gray-900 bg-gray-100/70 rounded-md cursor-pointer font-medium"
-            >
-              AI 콘텐츠 생성
-            </Link>
-            <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
-              Sora
-            </div>
-
-            <div className="pt-4">
-              <div className="px-3 py-2 text-sm font-medium text-gray-900">스토리</div>
-            </div>
-
-            <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
-              회사
-            </div>
-            <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
-              뉴스
-            </div>
-
-            <div className="pt-4">
-              <div className="px-3 py-2 text-sm font-medium text-gray-900">관리</div>
-            </div>
-
-            <Link
-              href="/admin"
-              className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
-            >
-              관리자 페이지
-            </Link>
+                  return (
+                    <div key={item.id} className={shouldAddSpacing ? "mt-4" : ""}>
+                      {hasChildren ? (
+                        <>
+                          {item.href ? (
+                            <Link
+                              href={item.href}
+                              className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
+                            >
+                              {item.label}
+                            </Link>
+                          ) : (
+                            <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
+                              {item.label}
+                            </div>
+                          )}
+                          <div className="ml-4 mt-1 space-y-0">
+                            {item.children?.map((child) =>
+                              child.href ? (
+                                <Link
+                                  key={child.id}
+                                  href={child.href}
+                                  className="block px-3 py-2 text-sm text-gray-500 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
+                                >
+                                  {child.label}
+                                </Link>
+                              ) : (
+                                <div
+                                  key={child.id}
+                                  className="px-3 py-2 text-sm text-gray-500 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
+                                >
+                                  {child.label}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </>
+                      ) : item.href ? (
+                        <Link
+                          href={item.href}
+                          className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors">
+                          {item.label}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+                {sectionIndex < mockNavItems.length - 1 && <div className="pt-4" />}
+              </div>
+            ))}
           </div>
         </nav>
       </aside>
