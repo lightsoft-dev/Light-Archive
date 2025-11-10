@@ -15,7 +15,7 @@ function Footerdemo() {
   return (
     <footer className="relative border-t bg-background text-foreground transition-colors duration-300">
       <div className="container mx-auto px-4 py-12 md:px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
           {/* Newsletter Section */}
           <div className="relative">
             <h2 className="mb-4 text-3xl font-bold tracking-tight">Light Archive</h2>
@@ -62,17 +62,6 @@ function Footerdemo() {
             </nav>
           </div>
 
-          {/* Contact Info */}
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">문의하기</h3>
-            <address className="space-y-2 text-sm not-italic">
-              <p>서울특별시 강남구</p>
-              <p>테헤란로 123</p>
-              <p>전화: 02-1234-5678</p>
-              <p>이메일: hello@lightarchive.com</p>
-            </address>
-          </div>
-
           {/* Social Media */}
           <div className="relative">
             <h3 className="mb-4 text-lg font-semibold">소셜 미디어</h3>
@@ -80,7 +69,12 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full"
+                      onClick={() => window.open('https://github.com/lightsoft-dev', '_blank')}
+                    >
                       <Github className="h-4 w-4" />
                       <span className="sr-only">GitHub</span>
                     </Button>
@@ -93,20 +87,12 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
-                      <Twitter className="h-4 w-4" />
-                      <span className="sr-only">Twitter</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Twitter에서 팔로우하기</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full"
+                      onClick={() => window.open('https://www.instagram.com/lightsoft_crew/', '_blank')}
+                    >
                       <Instagram className="h-4 w-4" />
                       <span className="sr-only">Instagram</span>
                     </Button>
@@ -119,13 +105,20 @@ function Footerdemo() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
-                      <Linkedin className="h-4 w-4" />
-                      <span className="sr-only">LinkedIn</span>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full"
+                      onClick={() => window.open('https://www.threads.com/@lightsoft_crew', '_blank')}
+                    >
+                      <svg className="h-4 w-4" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.924-10.935 21.341-10.935h.229c8.249.053 14.474 2.452 18.503 7.13 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.141-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.453-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.483-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.204 17.11 97.013 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.07 0h-.113C68.882.194 47.292 9.642 32.788 28.08 19.882 44.485 13.224 67.315 13.001 95.932L13 96v.067c.224 28.617 6.882 51.447 19.788 67.854C47.292 182.358 68.882 191.806 96.957 192h.113c24.96-.173 42.554-6.708 57.048-21.19 18.963-18.945 18.392-42.691 12.142-57.27-4.484-10.454-13.033-18.945-24.723-24.552ZM98.44 129.507c-9.983.577-21.735-3.568-21.735-13.994 0-8.907 7.779-15.667 18.445-16.028 1.43-.047 2.828-.068 4.189-.068 8.018 0 15.316.824 21.74 2.457-2.979 24.159-13.638 27.053-22.639 27.633Z" />
+                      </svg>
+                      <span className="sr-only">Threads</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>LinkedIn에서 연결하기</p>
+                    <p>Threads에서 팔로우하기</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

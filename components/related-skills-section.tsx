@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { getArchiveById, getRelatedArchives } from "@/lib/supabase-archive"
+import { getArchiveThumbnail } from "@/lib/utils"
 import type { Archive } from "@/types/archive"
 
 export function RelatedSkillsSection({ currentSkillId }: { currentSkillId?: string }) {
@@ -42,15 +43,13 @@ export function RelatedSkillsSection({ currentSkillId }: { currentSkillId?: stri
               className="group block py-2 hover:opacity-80 transition-opacity"
             >
               <div className="flex gap-3">
-                {(skill.image || skill.thumbnail_url) && (
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
-                    <img
-                      src={skill.image || skill.thumbnail_url || `https://images.unsplash.com/photo-1558655146-364adaf1fcc9?w=640&h=360&fit=crop`}
-                      alt={skill.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                )}
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                  <img
+                    src={getArchiveThumbnail(skill)}
+                    alt={skill.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-gray-500 mb-1">{skill.sub_category || skill.category}</div>
                   <h3 className="text-base font-medium text-black mb-1 group-hover:text-gray-600 transition-colors">
