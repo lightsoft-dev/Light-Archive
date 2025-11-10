@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Play, LinkIcon, ChevronDown, Instagram } from "lucide-react"
+import { ChevronDown, Instagram } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RelatedProjectsSection } from "@/components/related-projects-section"
+import { IconCloud } from "@/components/ui/interactive-icon-cloud"
 import { mockArticles } from "@/components/mock/articles"
 import { Post } from "@/types/archive"
 
@@ -131,26 +132,6 @@ export function ArticleContent({ selectedPost }: ArticleContentProps) {
         </div>
       </div>
 
-      {/* Video Player */}
-      <div className="mb-16 bg-gray-100 rounded-2xl overflow-hidden">
-        <div className="aspect-video flex items-center justify-center relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button className="w-16 h-16 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
-              <Play className="w-6 h-6 text-white ml-1" fill="white" />
-            </button>
-          </div>
-          <div className="absolute bottom-4 left-4 flex items-center gap-2 text-sm text-black">
-            <span>문서 내용 듣기</span>
-            <span className="text-gray-600">0:04</span>
-          </div>
-          <div className="absolute bottom-4 right-4">
-            <button className="p-2 hover:bg-gray-200 rounded-md transition-colors">
-              <LinkIcon className="w-4 h-4 text-black" />
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="space-y-8">
         {article.content.split('\n\n').map((paragraph, index) => (
@@ -158,10 +139,6 @@ export function ArticleContent({ selectedPost }: ArticleContentProps) {
             {paragraph}
           </p>
         ))}
-
-        <div className="my-12 rounded-2xl overflow-hidden">
-          <img src="/modern-ai-interface-dashboard-with-chat-bubbles.jpg" alt="Light Archive Interface" className="w-full h-auto" />
-        </div>
 
         <p className="text-lg text-gray-700 leading-relaxed">
           외부에는 우리 팀의 기술력과 프로젝트 성과를 홍보하고, 내부에는 지식 자산을 축적하고 재활용하는 공간을 제공합니다.
@@ -263,8 +240,33 @@ ERP, CRM 등 기업용 프로그램에 강점
           </div>
         </div>
 
-        <div className="my-16 rounded-2xl overflow-hidden">
-          <img src="/ai-technology-abstract-visualization-with-neural-n.jpg" alt="AI Technology" className="w-full h-auto" />
+        {/* Icon Cloud - Technology Stack Visualization */}
+        <div className="my-16">
+          <div className="relative flex w-full items-center justify-center overflow-visible">
+            <IconCloud iconSlugs={[
+              "typescript",
+              "javascript",
+              "react",
+              "nextdotjs",
+              "nodedotjs",
+              "express",
+              "python",
+              "openai",
+              "supabase",
+              "postgresql",
+              "vercel",
+              "github",
+              "git",
+              "docker",
+              "tailwindcss",
+              "figma",
+              "visualstudiocode",
+              "claude",
+              "cursor",
+              "notion",
+              "slack"
+            ]} />
+          </div>
         </div>
 
         {/* Additional content section */}
