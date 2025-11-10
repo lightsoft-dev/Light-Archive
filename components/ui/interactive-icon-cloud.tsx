@@ -65,9 +65,11 @@ type IconData = Awaited<ReturnType<typeof fetchSimpleIcons>>
 
 export function IconCloud({ iconSlugs }: DynamicCloudProps) {
   const [data, setData] = useState<IconData | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
   const { theme } = useTheme()
 
   useEffect(() => {
+    setIsMounted(true)
     fetchSimpleIcons({ slugs: iconSlugs }).then(setData)
   }, [iconSlugs])
 
@@ -78,6 +80,15 @@ export function IconCloud({ iconSlugs }: DynamicCloudProps) {
       renderCustomIcon(icon, theme || "light"),
     )
   }, [data, theme])
+
+  // 클라이언트에서만 렌더링 (hydration mismatch 방지)
+  if (!isMounted) {
+    return (
+      <div style={{ width: "100%", height: "400px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#999" }}>로딩 중...</div>
+      </div>
+    )
+  }
 
   return (
     // @ts-ignore

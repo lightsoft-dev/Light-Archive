@@ -4,6 +4,7 @@ import Link from "next/link"
 import { X, Clock } from "lucide-react"
 import { useState, useEffect } from "react"
 import { getRecentArchives } from "@/lib/supabase-archive"
+import { getArchiveThumbnail } from "@/lib/utils"
 import type { Archive } from "@/types/archive"
 
 export function RecommendedArticles() {
@@ -62,7 +63,7 @@ export function RecommendedArticles() {
             <div className="flex gap-3">
               <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
                 <img
-                  src={article.image || article.thumbnail_url || `https://images.unsplash.com/photo-1558655146-364adaf1fcc9?w=640&h=360&fit=crop`}
+                  src={getArchiveThumbnail(article)}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
