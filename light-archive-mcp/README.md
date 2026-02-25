@@ -1,4 +1,4 @@
-# Light Archive MCP Server (Fixed Version)
+# Light Archive MCP Server (v1.0.7)
 
 ✅ **실제 프로젝트 구조에 맞게 수정된 버전입니다!**
 
@@ -6,20 +6,17 @@
 
 ```
 light-archive-mcp/
-├── light_archive_mcp_fixed.py  ⭐ MCP 서버 (v1.0.5)
+├── light_archive_mcp_fixed.py  ⭐ MCP 서버 (v1.0.7)
 ├── requirements_uv.txt         📋 패키지 의존성
 ├── .env.example                🔐 환경 변수 예시
-├── .venv/                      🐍 Python 가상환경
+├── .venv/                      🐍 Python 가상환경 (Python 3.14)
 ├── docs/                       📚 문서 모음
 │   ├── QUICKSTART.md           🚀 3분 빠른 시작
 │   ├── SETUP_GUIDE.md          📖 완전한 설치 가이드
 │   ├── INSTALL_COMPLETE.md     ✅ 설치 완료 후 가이드
 │   ├── START_HERE.md           🎯 여기서 시작
-│   ├── IMAGE_FEATURES.md       🖼️ 이미지 기능 가이드
 │   ├── TROUBLESHOOTING.md      🐛 오류 해결 가이드
 │   ├── CHANGELOG.md            📝 버전 변경 이력
-│   ├── UPDATE_v1.0.5.md        📄 v1.0.5 업데이트 가이드 🆕
-│   ├── UPDATE_v1.0.4.md        📄 v1.0.4 업데이트 가이드
 │   ├── GITHUB_STRATEGY.md      🚀 GitHub 배포 전략
 │   └── READY_FOR_GITHUB.md     ✅ GitHub 푸시 준비
 └── README.md                   📄 이 파일
@@ -29,10 +26,9 @@ light-archive-mcp/
 
 - **올바른 DB 구조**: 실제 `archive_items` 테이블 사용
 - **PostgreSQL 배열**: `tags[]`, `technologies[]` 필드 지원
-- **AI 기능**: OpenAI API 기반 초안/요약/태그 자동 생성
-- **이미지 지원**: Data URI 형식으로 자동 업로드/분석 (v1.0.5) 🆕
 - **MCP 프로토콜**: Claude와 자연어로 대화하며 아카이브 관리
-- **자동 ID 생성**: Next.js 앱과 동일한 패턴으로 ID 자동 생성 (v1.0.1+)
+- **자동 ID 생성**: Next.js 앱과 동일한 패턴으로 ID 자동 생성
+- **HTML 콘텐츠**: content 필드를 HTML 형식으로 작성
 
 ## 🚀 빠른 시작
 
@@ -72,21 +68,14 @@ light-archive-mcp/
 - `archive_create_archive` - 생성
 - `archive_update_archive` - 수정
 
-### AI 지원 (3개) - OpenAI API
-- `archive_generate_draft` - AI 초안 자동 생성
-- `archive_generate_summary` - 본문 요약
-- `archive_suggest_tags` - 태그/기술 자동 추천
-
-### 이미지 기능 (3개) 🆕
-- `archive_upload_image` - 이미지 Supabase Storage 업로드
-- `archive_analyze_image` - AI 이미지 분석 (OpenAI Vision)
-- `archive_generate_draft_with_images` - 이미지 기반 초안 생성
-
 ### 추가 기능 (2개)
 - `archive_find_related` - 유사 항목 추천
 - `archive_list_archives` - 목록 조회
 
-**총 12개 도구** (v1.0.5)
+**총 6개 도구** (v1.0.7)
+
+> **참고**: AI 초안/요약/태그 생성 도구와 이미지 도구는 v1.0.7에서 제거되었습니다.
+> Claude가 직접 작성하거나, Next.js 앱(archive.lightsoft.dev)에서 이미지를 업로드하세요.
 
 ## 📊 실제 데이터베이스 구조
 
@@ -133,19 +122,11 @@ CREATE TABLE archive_items (
 "이 아카이브(ID: xxx)와 비슷한 다른 프로젝트 알려줘"
 ```
 
-#### 이미지 기반 작업 🆕
+#### 이미지 포함 작업
 ```
-[스크린샷 첨부]
-
-"이 프로젝트 이미지들로 아카이브 초안 만들어줘.
-제목: 사용자 대시보드 개발
-카테고리: 프로젝트
-기술: React, TypeScript, Tailwind CSS"
-
-→ 자동으로 이미지 업로드 + 분석 + 초안 생성!
+"이 프로젝트 아카이브 만들어줘.
+이미지는 archive.lightsoft.dev에서 직접 업로드할게."
 ```
-
-**더 많은 예시**: `docs/IMAGE_FEATURES.md`
 
 ## 🔧 문제 해결
 
@@ -154,7 +135,17 @@ CREATE TABLE archive_items (
 
 ```bash
 python3 --version
-pip3 install -r requirements.txt
+pip3 install -r requirements_uv.txt
+```
+
+### .venv 심볼릭 링크 깨짐 (Python 업그레이드 후)
+→ Python 버전이 바뀌면 `.venv`를 다시 만들어야 합니다.
+
+```bash
+rm -rf .venv
+python3 -m venv .venv
+.venv/bin/pip install -r requirements_uv.txt
+.venv/bin/pip install mcp
 ```
 
 ### Supabase 연결 실패
@@ -179,13 +170,9 @@ cat .env | grep OPENAI
 | **docs/START_HERE.md** | 여기서 시작! | ⭐ 필수 |
 | **docs/QUICKSTART.md** | 3분 빠른 시작 | ⭐ 추천 |
 | **docs/INSTALL_COMPLETE.md** | 설치 완료 후 가이드 | ⭐ 추천 |
-| **docs/IMAGE_FEATURES.md** | 이미지 기능 가이드 | ⭐ 기능 안내 |
-| **docs/UPDATE_v1.0.5.md** | v1.0.5 업데이트 가이드 | ⭐ 최신 버전 🆕 |
-| **docs/UPDATE_v1.0.4.md** | v1.0.4 업데이트 가이드 | 이전 버전 |
 | **docs/SETUP_GUIDE.md** | 완전한 설치 가이드 | 상세 |
 | **docs/TROUBLESHOOTING.md** | 오류 해결 가이드 | 문제 발생 시 |
 | **docs/CHANGELOG.md** | 버전 변경 이력 | 참고 |
-| **docs/DEPLOYMENT_STRATEGY.md** | 배포 및 확장 전략 | ⭐ 개발자용 |
 
 ## ⚠️ 주의사항
 
