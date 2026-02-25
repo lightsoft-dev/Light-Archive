@@ -6,6 +6,8 @@ import Placeholder from "@tiptap/extension-placeholder"
 import Image from "@tiptap/extension-image"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table"
+import Link from "@tiptap/extension-link"
+import Heading from "@tiptap/extension-heading"
 import { common, createLowlight } from "lowlight"
 import {
   Bold,
@@ -46,10 +48,61 @@ export function AdvancedEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-        },
+        heading: false, // 커스텀 Heading 사용 (id 속성 보존)
         codeBlock: false, // CodeBlockLowlight를 사용할 것이므로 비활성화
+      }),
+      // 제목에 id 속성 보존 (앵커 링크 목차용)
+      Heading.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            id: {
+              default: null,
+              parseHTML: (element) => element.getAttribute("id"),
+              renderHTML: (attributes) => {
+                if (!attributes.id) return {}
+                return { id: attributes.id }
+              },
+            },
+          }
+        },
+      }).configure({ levels: [1, 2, 3] }),
+      // 링크: 앵커(#)는 같은 페이지, 외부는 새 탭
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {},
+        // target="_blank"를 자동으로 붙이지 않음
+      }).extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            href: {
+              default: null,
+            },
+            target: {
+              default: null,
+              // #으로 시작하는 앵커 링크는 target 제거
+              parseHTML: (element) => {
+                const href = element.getAttribute("href")
+                if (href?.startsWith("#")) return null
+                return element.getAttribute("target")
+              },
+              renderHTML: (attributes) => {
+                if (attributes.href?.startsWith("#")) return {}
+                if (!attributes.target) return {}
+                return { target: attributes.target }
+              },
+            },
+            rel: {
+              default: null,
+              parseHTML: (element) => element.getAttribute("rel"),
+              renderHTML: (attributes) => {
+                if (!attributes.rel) return {}
+                return { rel: attributes.rel }
+              },
+            },
+          }
+        },
       }),
       Placeholder.configure({
         placeholder,
