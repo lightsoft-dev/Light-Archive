@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Image from "@tiptap/extension-image"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
+import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table"
 import { common, createLowlight } from "lowlight"
 import {
   Bold,
@@ -64,6 +65,24 @@ export function AdvancedEditor({
         lowlight,
         HTMLAttributes: {
           class: "bg-gray-900 text-gray-100 p-4 rounded-lg my-4 overflow-x-auto",
+        },
+      }),
+      // 테이블 지원 (노션 복붙 시 테이블 구조 보존)
+      Table.configure({
+        resizable: false,
+        HTMLAttributes: {
+          class: "border-collapse w-full my-4",
+        },
+      }),
+      TableRow,
+      TableCell.configure({
+        HTMLAttributes: {
+          class: "border border-gray-300 px-4 py-2",
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: "border border-gray-300 bg-gray-50 px-4 py-2 font-semibold",
         },
       }),
     ],
