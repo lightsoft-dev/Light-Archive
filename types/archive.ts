@@ -79,5 +79,15 @@ export type Archive = Project | Skill | Post
  */
 export type ArchiveCategory = "기술" | "프로젝트" | "리서치" | "뉴스"
 
+/**
+ * 첨부파일 타입
+ */
+export interface Attachment {
+  name: string
+  url: string
+  size: number
+  type: string
+}
+
 // Re-export for convenience
 export type { Project, Skill, Post }

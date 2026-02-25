@@ -48,8 +48,16 @@ import { toast } from "sonner"
 
 export default function AdminPage() {
   const router = useRouter()
+  // sessionStorage로 로그인 상태 유지 (페이지 이동해도 세션 동안 유지)
   const [isLoggedIn, setIsLoggedIn] = React.useState(false)
   const [loginOpen, setLoginOpen] = React.useState(false)
+
+  // 마운트 후 sessionStorage에서 로그인 상태 복원 (hydration 에러 방지)
+  React.useEffect(() => {
+    if (sessionStorage.getItem("admin_logged_in") === "true") {
+      setIsLoggedIn(true)
+    }
+  }, [])
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [loginError, setLoginError] = React.useState("")
@@ -89,6 +97,7 @@ export default function AdminPage() {
     // 이메일이 "admin"이고 비밀번호가 "1234"인지 확인
     if (email === "admin" && password === "1234") {
       setIsLoggedIn(true)
+      sessionStorage.setItem("admin_logged_in", "true")
       setLoginOpen(false)
       setEmail("")
       setPassword("")

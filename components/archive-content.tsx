@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip } from "lucide-react"
 import { useRouter } from "next/navigation"
-import type { Archive } from "@/types/archive"
+import { getAttachments, formatFileSize, getFileIconType } from "@/lib/supabase-attachments"
+import type { Archive, Attachment } from "@/types/archive"
 import type { ReactNode } from "react"
 
 interface ArchiveContentProps {
@@ -21,8 +23,44 @@ interface ArchiveContentProps {
  * - Projects, Skills 등 모든 아카이브 타입에서 재사용
  * - CTA 버튼과 관련 섹션은 커스터마이징 가능
  */
+function AttachmentIcon({ type }: { type: string }) {
+  const iconType = getFileIconType(type)
+  const className = "w-5 h-5"
+  switch (iconType) {
+    case "image":
+      return <FileImage className={`${className} text-blue-500`} />
+    case "pdf":
+      return <FileText className={`${className} text-red-500`} />
+    case "document":
+      return <FileText className={`${className} text-blue-600`} />
+    case "code":
+      return <FileCode className={`${className} text-green-600`} />
+    default:
+      return <File className={`${className} text-gray-500`} />
+  }
+}
+
 export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveContentProps) {
   const router = useRouter()
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+
+  // 첨부파일 로드
+  useEffect(() => {
+    if (archive.id) {
+      getAttachments(archive.id).then(setAttachments)
+    }
+  }, [archive.id])
+
+  const handleDownload = (attachment: Attachment) => {
+    const link = document.createElement("a")
+    link.href = attachment.url
+    link.download = attachment.name
+    link.target = "_blank"
+    link.rel = "noopener noreferrer"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   const defaultCtaButtons = {
     primary: "시작하기",
@@ -73,31 +111,21 @@ export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveC
           </div>
 
           {/* Stats */}
-          {(archive.difficulty || archive.view_count !== undefined || archive.comment_count !== undefined) && (
+          {(archive.difficulty || archive.view_count !== undefined) && (
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
               {archive.difficulty && (
                 <>
                   <div>
                     <span className="font-medium">난이도:</span> {archive.difficulty}
                   </div>
-                  {(archive.view_count !== undefined || archive.comment_count !== undefined) && (
+                  {archive.view_count !== undefined && (
                     <span className="text-gray-300">·</span>
                   )}
                 </>
               )}
               {archive.view_count !== undefined && (
-                <>
-                  <div>
-                    <span className="font-medium">조회수:</span> {archive.view_count.toLocaleString()}
-                  </div>
-                  {archive.comment_count !== undefined && (
-                    <span className="text-gray-300">·</span>
-                  )}
-                </>
-              )}
-              {archive.comment_count !== undefined && (
                 <div>
-                  <span className="font-medium">댓글:</span> {archive.comment_count}
+                  <span className="font-medium">조회수:</span> {archive.view_count.toLocaleString()}
                 </div>
               )}
             </div>
@@ -136,6 +164,36 @@ export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveC
           <p className="text-lg text-gray-700 leading-relaxed">
             {archive.description}
           </p>
+        </div>
+      )}
+
+      {/* 첨부파일 다운로드 섹션 */}
+      {attachments.length > 0 && (
+        <div className="mt-16 pt-8 border-t">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+            <Paperclip className="w-5 h-5" />
+            첨부파일 ({attachments.length})
+          </h3>
+          <div className="space-y-2">
+            {attachments.map((attachment) => (
+              <button
+                key={attachment.url}
+                onClick={() => handleDownload(attachment)}
+                className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group text-left"
+              >
+                <AttachmentIcon type={attachment.type} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {attachment.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatFileSize(attachment.size)}
+                  </p>
+                </div>
+                <Download className="w-4 h-4 text-gray-400 group-hover:text-black transition-colors" />
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

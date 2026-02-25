@@ -58,7 +58,6 @@ function SkillsContent() {
     author: "팀",
     readTime: skill.difficulty || "5분 읽기",
     viewCount: skill.view_count,
-    commentCount: skill.comment_count,
   }))
 
   if (loading) {

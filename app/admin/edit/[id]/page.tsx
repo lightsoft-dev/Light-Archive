@@ -31,7 +31,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { getArchiveById, updateArchive, deleteArchive } from "@/lib/supabase-archive"
-import type { Archive } from "@/types/archive"
+import { FileAttachment } from "@/components/admin/file-attachment"
+import { getAttachments, deleteAllAttachments } from "@/lib/supabase-attachments"
+import type { Archive, Attachment } from "@/types/archive"
 
 export default function EditPostPage() {
   const router = useRouter()
@@ -52,6 +54,9 @@ export default function EditPostPage() {
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
+
+  // 첨부파일
+  const [attachments, setAttachments] = useState<Attachment[]>([])
 
   // 삭제 확인 다이얼로그
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -78,6 +83,10 @@ export default function EditPostPage() {
         setDifficulty(archive.difficulty || "")
         setContent(archive.content || "")
         setAuthor(archive.author || "")
+
+        // 첨부파일 로드
+        const files = await getAttachments(postId)
+        setAttachments(files)
 
         setLoading(false)
       } catch (error) {
@@ -133,6 +142,8 @@ export default function EditPostPage() {
 
   const handleDelete = async () => {
     try {
+      // 첨부파일도 함께 삭제
+      await deleteAllAttachments(postId)
       // Supabase에서 삭제
       const success = await deleteArchive(postId)
 
@@ -408,6 +419,21 @@ export default function EditPostPage() {
               </div>
             </div>
             <AdvancedEditor content={content} onChange={setContent} />
+          </div>
+
+          {/* 첨부파일 */}
+          <div className="border-t pt-6">
+            <Label className="text-base font-semibold flex items-center gap-2">
+              첨부파일
+            </Label>
+            <p className="text-sm text-gray-500 mt-1 mb-4">
+              PDF, 문서, 이미지 등 파일을 첨부할 수 있습니다. 방문자가 다운로드할 수 있습니다.
+            </p>
+            <FileAttachment
+              archiveId={postId}
+              attachments={attachments}
+              onChange={setAttachments}
+            />
           </div>
         </div>
       </div>

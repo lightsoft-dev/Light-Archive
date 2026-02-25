@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { LayoutGrid, List, Eye, MessageCircle } from 'lucide-react'
+import { LayoutGrid, List, Eye } from 'lucide-react'
 import { LazyImage } from './lazy-image'
 
 export interface BlogItem {
@@ -15,7 +15,6 @@ export interface BlogItem {
   author: string
   readTime: string
   viewCount?: number
-  commentCount?: number
 }
 
 type ViewMode = 'grid' | 'list'
@@ -190,12 +189,6 @@ export function BlogSection({
                       <div className="flex items-center gap-1">
                         <Eye className="h-3.5 w-3.5" />
                         <span>{blog.viewCount.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {blog.commentCount !== undefined && (
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="h-3.5 w-3.5" />
-                        <span>{blog.commentCount}</span>
                       </div>
                     )}
                   </div>

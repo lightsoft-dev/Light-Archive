@@ -13,6 +13,8 @@ import { AdvancedEditor } from "@/components/admin/advanced-editor"
 import { TagInput } from "@/components/admin/tag-input"
 import { toast } from "sonner"
 import { createArchive } from "@/lib/supabase-archive"
+import { FileAttachment } from "@/components/admin/file-attachment"
+import type { Attachment } from "@/types/archive"
 import {
   Dialog,
   DialogContent,
@@ -33,6 +35,10 @@ export default function NewPostPage() {
   const [content, setContent] = useState("")
   const [author, setAuthor] = useState("")
 
+  // 첨부파일 관련 상태
+  const [archiveId] = useState(() => `${Date.now()}-${Math.random().toString(36).substring(7)}`)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+
   // AI 초안 생성 관련 상태
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState("")
@@ -50,9 +56,9 @@ export default function NewPostPage() {
     }
 
     try {
-      // Supabase에 저장
+      // Supabase에 저장 (첨부파일 업로드 시 사용한 ID와 동일)
       const archiveData = {
-        id: `${Date.now()}-${Math.random().toString(36).substring(7)}`, // 고유 ID 생성
+        id: archiveId,
         title,
         category,
         sub_category: field,
@@ -325,6 +331,21 @@ export default function NewPostPage() {
               </div>
             </div>
             <AdvancedEditor content={content} onChange={setContent} />
+          </div>
+
+          {/* 첨부파일 */}
+          <div className="border-t pt-6">
+            <Label className="text-base font-semibold flex items-center gap-2">
+              첨부파일
+            </Label>
+            <p className="text-sm text-gray-500 mt-1 mb-4">
+              PDF, 문서, 이미지 등 파일을 첨부할 수 있습니다. 방문자가 다운로드할 수 있습니다.
+            </p>
+            <FileAttachment
+              archiveId={archiveId}
+              attachments={attachments}
+              onChange={setAttachments}
+            />
           </div>
         </div>
       </div>

@@ -71,7 +71,6 @@ function ProjectsContent() {
     author: "팀",
     readTime: project.difficulty || "5분 읽기",
     viewCount: project.view_count,
-    commentCount: project.comment_count,
   }))
 
   if (loading) {
