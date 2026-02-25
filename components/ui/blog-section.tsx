@@ -127,7 +127,7 @@ export function BlogSection({
             >
               <LazyImage
                 src={blog.image}
-                fallback="https://placehold.co/640x360?text=대체+이미지"
+                fallback="/placeholder-image.png"
                 inView={true}
                 alt={blog.title}
                 ratio={16 / 9}
@@ -162,7 +162,7 @@ export function BlogSection({
               <div className="flex-shrink-0 w-32 h-20 overflow-hidden rounded-lg">
                 <LazyImage
                   src={blog.image}
-                  fallback="https://placehold.co/640x360?text=대체+이미지"
+                  fallback="/placeholder-image.png"
                   inView={true}
                   alt={blog.title}
                   ratio={16 / 9}

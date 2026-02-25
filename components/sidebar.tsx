@@ -34,7 +34,7 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
       >
         <div className="p-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/가로logo.png" alt="Lightsoft" className="h-16" />
+            <img src="/가로logo.png" alt="Lightsoft" className="w-full max-w-[180px]" />
           </Link>
           <div className="flex items-center gap-2">
             <button onClick={onToggle} className="hidden lg:flex p-2 hover:bg-gray-100/50 rounded-md transition-colors">
