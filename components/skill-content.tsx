@@ -54,10 +54,6 @@ export function SkillContent({ id }: { id?: string }) {
   return (
     <ArchiveContent
       archive={skill}
-      ctaButtons={{
-        primary: "시작하기",
-        secondary: "예제 코드 보기"
-      }}
       relatedSection={<RelatedArchivesSection currentArchive={skill} />}
     />
   )

@@ -11,10 +11,6 @@ import type { ReactNode } from "react"
 
 interface ArchiveContentProps {
   archive: Archive
-  ctaButtons?: {
-    primary: string
-    secondary: string
-  }
   relatedSection?: ReactNode
 }
 
@@ -40,7 +36,7 @@ function AttachmentIcon({ type }: { type: string }) {
   }
 }
 
-export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveContentProps) {
+export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps) {
   const router = useRouter()
   const [attachments, setAttachments] = useState<Attachment[]>([])
 
@@ -61,13 +57,6 @@ export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveC
     link.click()
     document.body.removeChild(link)
   }
-
-  const defaultCtaButtons = {
-    primary: "시작하기",
-    secondary: "더 알아보기"
-  }
-
-  const buttons = ctaButtons || defaultCtaButtons
 
   const handleBack = () => {
     router.back()
@@ -133,16 +122,19 @@ export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveC
         </div>
       </div>
 
-      {/* CTA Buttons */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
-        <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6 py-3 text-sm font-medium">
-          {buttons.primary}
-        </Button>
-        <button className="flex items-center gap-2 text-sm text-black hover:underline">
-          {buttons.secondary}
-          <span className="text-gray-400">→</span>
-        </button>
-      </div>
+      {/* 첨부파일 바로가기 */}
+      {attachments.length > 0 && (
+        <div className="mb-12">
+          <Button
+            onClick={() => document.getElementById("attachments")?.scrollIntoView({ behavior: "smooth" })}
+            className="bg-black text-white hover:bg-gray-800 rounded-full px-6 py-3 text-sm font-medium gap-2"
+          >
+            <Paperclip className="w-4 h-4" />
+            첨부파일 ({attachments.length})
+            <span className="text-gray-400">↓</span>
+          </Button>
+        </div>
+      )}
 
       {/* Archive Image */}
       {archive.image && (
@@ -169,7 +161,7 @@ export function ArchiveContent({ archive, ctaButtons, relatedSection }: ArchiveC
 
       {/* 첨부파일 다운로드 섹션 */}
       {attachments.length > 0 && (
-        <div className="mt-16 pt-8 border-t">
+        <div id="attachments" className="mt-16 pt-8 border-t scroll-mt-8">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
             <Paperclip className="w-5 h-5" />
             첨부파일 ({attachments.length})

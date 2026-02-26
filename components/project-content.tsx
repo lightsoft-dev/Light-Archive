@@ -54,10 +54,6 @@ export function ProjectContent({ id }: { id?: string }) {
   return (
     <ArchiveContent
       archive={project}
-      ctaButtons={{
-        primary: "프로젝트 시작하기",
-        secondary: "데모 보기"
-      }}
       relatedSection={<RelatedArchivesSection currentArchive={project} />}
     />
   )

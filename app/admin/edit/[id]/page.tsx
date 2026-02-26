@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Save, Eye, Sparkles, Trash2, Info } from "lucide-react"
+import { ArrowLeft, Save, Eye, Sparkles, Trash2, Info, CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,6 +30,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format, parse } from "date-fns"
+import { ko } from "date-fns/locale"
 import { getArchiveById, updateArchive, deleteArchive } from "@/lib/supabase-archive"
 import { FileAttachment } from "@/components/admin/file-attachment"
 import { getAttachments, deleteAllAttachments } from "@/lib/supabase-attachments"
@@ -49,6 +53,7 @@ export default function EditPostPage() {
   const [difficulty, setDifficulty] = useState<string>("")
   const [content, setContent] = useState("")
   const [author, setAuthor] = useState("")
+  const [date, setDate] = useState("")
 
   // AI 초안 생성 관련 상태
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
@@ -83,6 +88,7 @@ export default function EditPostPage() {
         setDifficulty(archive.difficulty || "")
         setContent(archive.content || "")
         setAuthor(archive.author || "")
+        setDate(archive.date || "")
 
         // 첨부파일 로드
         const files = await getAttachments(postId)
@@ -122,6 +128,7 @@ export default function EditPostPage() {
         difficulty,
         content,
         author,
+        date,
       }
 
       const result = await updateArchive(postId, updates)
@@ -395,6 +402,39 @@ export default function EditPostPage() {
                   className="mt-2"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="date" className="text-base font-semibold">
+                날짜
+              </Label>
+              <p className="text-sm text-gray-500 mt-1 mb-2">
+                게시글에 표시될 날짜를 선택하세요.
+              </p>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant="outline"
+                    className={`mt-2 w-full justify-start text-left font-normal ${!date ? "text-muted-foreground" : ""}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date || "날짜를 선택하세요"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date ? parse(date, "yyyy. M. d.", new Date()) : undefined}
+                    onSelect={(selectedDate) => {
+                      if (selectedDate) {
+                        setDate(format(selectedDate, "yyyy. M. d.", { locale: ko }))
+                      }
+                    }}
+                    locale={ko}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
