@@ -24,13 +24,14 @@ export async function getAllArchives(): Promise<Archive[]> {
 }
 
 /**
- * 카테고리별 아카이브 가져오기
+ * 카테고리별 아카이브 가져오기 (공개용 - published만)
  */
 export async function getArchivesByCategory(category: string): Promise<Archive[]> {
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
     .eq("category", category)
+    .eq("status", "published")
     .order("created_at", { ascending: false })
 
   if (error) {
@@ -74,7 +75,7 @@ export async function getSkills(): Promise<Archive[]> {
 }
 
 /**
- * 서브카테고리별 아카이브 가져오기
+ * 서브카테고리별 아카이브 가져오기 (공개용 - published만)
  */
 export async function getArchivesBySubCategory(
   category: string,
@@ -85,6 +86,7 @@ export async function getArchivesBySubCategory(
     .select("*")
     .eq("category", category)
     .eq("sub_category", subCategory)
+    .eq("status", "published")
     .order("created_at", { ascending: false })
 
   if (error) {
@@ -96,13 +98,14 @@ export async function getArchivesBySubCategory(
 }
 
 /**
- * 태그로 아카이브 검색
+ * 태그로 아카이브 검색 (공개용 - published만)
  */
 export async function getArchivesByTag(tag: string): Promise<Archive[]> {
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
     .contains("tags", [tag])
+    .eq("status", "published")
     .order("created_at", { ascending: false })
 
   if (error) {
@@ -114,12 +117,13 @@ export async function getArchivesByTag(tag: string): Promise<Archive[]> {
 }
 
 /**
- * 전체 텍스트 검색
+ * 전체 텍스트 검색 (공개용 - published만)
  */
 export async function searchArchives(query: string): Promise<Archive[]> {
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
+    .eq("status", "published")
     .or(`title.ilike.%${query}%,description.ilike.%${query}%,content.ilike.%${query}%`)
     .order("created_at", { ascending: false })
 
@@ -199,12 +203,13 @@ export async function incrementViewCount(id: string): Promise<void> {
 }
 
 /**
- * 인기 아카이브 가져오기 (조회수 기준)
+ * 인기 아카이브 가져오기 (조회수 기준, 공개용 - published만)
  */
 export async function getPopularArchives(limit: number = 5): Promise<Archive[]> {
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
+    .eq("status", "published")
     .order("view_count", { ascending: false })
     .limit(limit)
 
@@ -217,12 +222,13 @@ export async function getPopularArchives(limit: number = 5): Promise<Archive[]> 
 }
 
 /**
- * 최신 아카이브 가져오기
+ * 최신 아카이브 가져오기 (공개용 - published만)
  */
 export async function getRecentArchives(limit: number = 5): Promise<Archive[]> {
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
+    .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit)
 
@@ -235,7 +241,7 @@ export async function getRecentArchives(limit: number = 5): Promise<Archive[]> {
 }
 
 /**
- * 관련 아카이브 가져오기 (스마트 추천)
+ * 관련 아카이브 가져오기 (스마트 추천, 공개용 - published만)
  *
  * 추천 우선순위:
  * 1. 같은 카테고리
@@ -259,6 +265,7 @@ export async function getRelatedArchives(
         .from("archive_items")
         .select("*")
         .eq("category", currentArchive.category)
+        .eq("status", "published")
         .neq("id", currentArchive.id)
         .order("created_at", { ascending: false })
         .limit(limit)
@@ -271,6 +278,7 @@ export async function getRelatedArchives(
     const { data: allCandidates, error } = await supabase
       .from("archive_items")
       .select("*")
+      .eq("status", "published")
       .neq("id", currentArchive.id)
       .order("created_at", { ascending: false })
       .limit(50) // 충분한 후보군 확보
@@ -320,7 +328,7 @@ export async function getRelatedArchives(
 }
 
 /**
- * 태그 기반 관련 아카이브 가져오기 (레거시 - 하위 호환성)
+ * 태그 기반 관련 아카이브 가져오기 (레거시 - 하위 호환성, 공개용 - published만)
  * @deprecated getRelatedArchives(currentArchive, limit) 사용 권장
  */
 export async function getRelatedArchivesByTags(
@@ -335,6 +343,7 @@ export async function getRelatedArchivesByTags(
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
+    .eq("status", "published")
     .neq("id", currentId)
     .overlaps("tags", tags)
     .limit(limit)

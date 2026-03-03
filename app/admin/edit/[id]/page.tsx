@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Save, Eye, Sparkles, Trash2, Info, CalendarIcon } from "lucide-react"
+import { ArrowLeft, Save, Eye, Sparkles, Trash2, Info, CalendarIcon, FileText, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -54,6 +54,7 @@ export default function EditPostPage() {
   const [content, setContent] = useState("")
   const [author, setAuthor] = useState("")
   const [date, setDate] = useState("")
+  const [status, setStatus] = useState<"draft" | "published" | "archived">("draft")
 
   // AI 초안 생성 관련 상태
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
@@ -89,6 +90,7 @@ export default function EditPostPage() {
         setContent(archive.content || "")
         setAuthor(archive.author || "")
         setDate(archive.date || "")
+        setStatus(archive.status || "draft")
 
         // 첨부파일 로드
         const files = await getAttachments(postId)
@@ -106,14 +108,16 @@ export default function EditPostPage() {
     loadArchive()
   }, [postId, router])
 
-  const handleSave = async () => {
+  const handleSave = async (newStatus?: "draft" | "published") => {
     if (!title.trim()) {
       toast.error("제목을 입력하세요")
       return
     }
 
-    if (!content.trim()) {
-      toast.error("내용을 입력하세요")
+    const targetStatus = newStatus || status
+
+    if (targetStatus === "published" && !content.trim()) {
+      toast.error("발행하려면 내용을 입력하세요")
       return
     }
 
@@ -129,12 +133,16 @@ export default function EditPostPage() {
         content,
         author,
         date,
+        status: targetStatus,
       }
 
       const result = await updateArchive(postId, updates)
 
       if (result) {
-        toast.success("아카이브가 저장되었습니다! 목록으로 이동합니다...")
+        const message = targetStatus === "draft"
+          ? "임시저장되었습니다! 목록으로 이동합니다..."
+          : "아카이브가 발행되었습니다! 목록으로 이동합니다..."
+        toast.success(message)
         setTimeout(() => {
           router.push("/admin")
         }, 1500)
@@ -257,7 +265,19 @@ export default function EditPostPage() {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-semibold">아카이브 수정</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl font-semibold">아카이브 수정</h1>
+                {status === "draft" && (
+                  <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-yellow-100 text-yellow-800">
+                    임시저장
+                  </span>
+                )}
+                {status === "published" && (
+                  <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-green-100 text-green-800">
+                    발행됨
+                  </span>
+                )}
+              </div>
               <p className="text-neutral-600 mt-2">
                 기술 문서 또는 프로젝트 아카이브를 수정하세요
               </p>
@@ -279,9 +299,13 @@ export default function EditPostPage() {
                 <Sparkles className="w-4 h-4" />
                 AI 재작성
               </Button>
-              <Button onClick={handleSave} className="gap-2">
-                <Save className="w-4 h-4" />
-                저장
+              <Button variant="outline" onClick={() => handleSave("draft")} className="gap-2">
+                <FileText className="w-4 h-4" />
+                임시저장
+              </Button>
+              <Button onClick={() => handleSave("published")} className="gap-2">
+                <Send className="w-4 h-4" />
+                발행
               </Button>
             </div>
           </div>

@@ -235,6 +235,35 @@ export default function AdminPage() {
       },
     },
     {
+      accessorKey: "status",
+      header: "상태",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string | undefined
+        if (status === "draft") {
+          return (
+            <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800">
+              임시저장
+            </span>
+          )
+        }
+        if (status === "published") {
+          return (
+            <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-800">
+              발행됨
+            </span>
+          )
+        }
+        if (status === "archived") {
+          return (
+            <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800">
+              보관됨
+            </span>
+          )
+        }
+        return <span className="text-sm text-gray-400">-</span>
+      },
+    },
+    {
       accessorKey: "date",
       header: "날짜",
       cell: ({ row }) => <div className="text-sm text-gray-600">{row.getValue("date") || "-"}</div>,
