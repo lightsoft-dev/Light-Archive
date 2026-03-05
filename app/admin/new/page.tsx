@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Save, Eye, Sparkles, Info } from "lucide-react"
+import { ArrowLeft, Save, Eye, Sparkles, Info, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -44,13 +44,13 @@ export default function NewPostPage() {
   const [aiPrompt, setAiPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const handleSave = async () => {
+  const handleSave = async (asDraft: boolean = false) => {
     if (!title.trim()) {
       toast.error("제목을 입력하세요")
       return
     }
 
-    if (!content.trim()) {
+    if (!asDraft && !content.trim()) {
       toast.error("내용을 입력하세요")
       return
     }
@@ -68,13 +68,13 @@ export default function NewPostPage() {
         content,
         author,
         date: new Date().toLocaleDateString("ko-KR"),
-        status: "published" as const,
+        status: asDraft ? "draft" as const : "published" as const,
       }
 
       const result = await createArchive(archiveData)
 
       if (result) {
-        toast.success("아카이브가 저장되었습니다! 목록으로 이동합니다...")
+        toast.success(asDraft ? "임시저장되었습니다! 목록으로 이동합니다..." : "아카이브가 저장되었습니다! 목록으로 이동합니다...")
 
         // 목록으로 이동
         setTimeout(() => {
@@ -184,9 +184,13 @@ export default function NewPostPage() {
                 <Sparkles className="w-4 h-4" />
                 AI 초안 생성
               </Button>
-              <Button onClick={handleSave} className="gap-2">
+              <Button variant="outline" onClick={() => handleSave(true)} className="gap-2">
+                <FileText className="w-4 h-4" />
+                임시저장
+              </Button>
+              <Button onClick={() => handleSave(false)} className="gap-2">
                 <Save className="w-4 h-4" />
-                저장
+                발행
               </Button>
             </div>
           </div>
