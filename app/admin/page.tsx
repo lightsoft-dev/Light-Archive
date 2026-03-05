@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-import { getAllArchivesAdmin, deleteArchive } from "@/lib/supabase-archive"
+import { getAllArchivesAdmin, deleteArchive, updateArchive } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
 import { toast } from "sonner"
 
@@ -129,6 +129,22 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Delete failed:", error)
       toast.error("삭제 중 오류가 발생했습니다")
+    }
+  }
+
+  const handleStatusChange = async (archiveId: string, newStatus: "draft" | "published" | "archived") => {
+    try {
+      const result = await updateArchive(archiveId, { status: newStatus })
+      if (result) {
+        setArchives(archives.map((a) => a.id === archiveId ? { ...a, status: newStatus } : a))
+        const labels = { draft: "임시저장", published: "발행", archived: "보관" }
+        toast.success(`${labels[newStatus]}으로 변경되었습니다`)
+      } else {
+        toast.error("상태 변경에 실패했습니다")
+      }
+    } catch (error) {
+      console.error("Status change failed:", error)
+      toast.error("상태 변경 중 오류가 발생했습니다")
     }
   }
 
@@ -287,6 +303,24 @@ export default function AdminPage() {
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(archive.id)}>ID 복사</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleEdit(archive)}>수정</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>상태 변경</DropdownMenuLabel>
+              {archive.status !== "published" && (
+                <DropdownMenuItem onClick={() => handleStatusChange(archive.id, "published")}>
+                  🟢 발행
+                </DropdownMenuItem>
+              )}
+              {archive.status !== "draft" && (
+                <DropdownMenuItem onClick={() => handleStatusChange(archive.id, "draft")}>
+                  🟡 임시저장
+                </DropdownMenuItem>
+              )}
+              {archive.status !== "archived" && (
+                <DropdownMenuItem onClick={() => handleStatusChange(archive.id, "archived")}>
+                  ⚫ 보관
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(archive.id)}>
                 삭제
               </DropdownMenuItem>
