@@ -2,62 +2,36 @@
 
 import * as React from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Facebook, Instagram, Linkedin, Send, Twitter, Github } from "lucide-react"
+import { Instagram, Github } from "lucide-react"
 
 function Footerdemo() {
   return (
     <footer className="relative border-t bg-background text-foreground transition-colors duration-300">
       <div className="container mx-auto px-4 py-12 md:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
-          {/* Newsletter Section */}
+          {/* About */}
           <div className="relative">
             <h2 className="mb-4 text-3xl font-bold tracking-tight">Light Archive</h2>
-            <p className="mb-6 text-muted-foreground">
-              AI 기반 기술/프로젝트 아카이브 플랫폼. 최신 기술 동향과 프로젝트 인사이트를 받아보세요.
+            <p className="text-muted-foreground">
+              라이트소프트의 AI 기반 기술/프로젝트 아카이브 플랫폼. 최신 기술 동향과 프로젝트 인사이트를 받아보세요.
             </p>
-            <form className="relative">
-              <Input
-                type="email"
-                placeholder="이메일을 입력하세요"
-                className="pr-12 backdrop-blur-sm"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="absolute right-1 top-1 h-8 w-8 rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
-              >
-                <Send className="h-4 w-4" />
-                <span className="sr-only">구독하기</span>
-              </Button>
-            </form>
-            <div className="absolute -right-4 top-0 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
           </div>
 
           {/* Quick Links */}
           <div>
             <h3 className="mb-4 text-lg font-semibold">카테고리</h3>
             <nav className="space-y-2 text-sm">
-              <a href="/" className="block transition-colors hover:text-primary">
-                전체
-              </a>
-              <a href="/?category=tech" className="block transition-colors hover:text-primary">
+              <a href="/skills" className="block transition-colors hover:text-primary">
                 기술
               </a>
-              <a href="/?category=project" className="block transition-colors hover:text-primary">
+              <a href="/projects" className="block transition-colors hover:text-primary">
                 프로젝트
-              </a>
-              <a href="/?category=research" className="block transition-colors hover:text-primary">
-                리서치
-              </a>
-              <a href="/?category=news" className="block transition-colors hover:text-primary">
-                뉴스
               </a>
             </nav>
           </div>
@@ -127,21 +101,10 @@ function Footerdemo() {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 text-center md:flex-row">
+        <div className="mt-12 flex items-center justify-center border-t pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 Light Archive. All rights reserved.
+            © 2025 Light Archive. All rights reserved.
           </p>
-          <nav className="flex gap-4 text-sm">
-            <a href="/privacy" className="transition-colors hover:text-primary">
-              개인정보처리방침
-            </a>
-            <a href="/terms" className="transition-colors hover:text-primary">
-              이용약관
-            </a>
-            <a href="/cookies" className="transition-colors hover:text-primary">
-              쿠키 정책
-            </a>
-          </nav>
         </div>
       </div>
     </footer>

@@ -5,16 +5,18 @@ import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
 import { getProjects } from "@/lib/supabase-archive"
+import { getCommentCounts } from "@/lib/supabase-comments"
 import { getArchiveThumbnail } from "@/lib/utils"
 import type { Archive } from "@/types/archive"
 import { BlogSection, type BlogItem } from "@/components/ui/blog-section"
 
-function ProjectsContent() {
+function ProjectsContent({ searchQuery }: { searchQuery: string }) {
   const searchParams = useSearchParams()
   const category = searchParams.get("category") || "all"
 
   // Supabase에서 데이터 가져오기
   const [projects, setProjects] = useState<Archive[]>([])
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,6 +24,9 @@ function ProjectsContent() {
       try {
         const data = await getProjects()
         setProjects(data)
+        const ids = data.map((p) => p.id)
+        const counts = await getCommentCounts(ids)
+        setCommentCounts(counts)
       } catch (error) {
         console.error("Failed to fetch projects:", error)
       } finally {
@@ -60,17 +65,32 @@ function ProjectsContent() {
     })
   }, [projects, category])
 
+  // 검색 필터링
+  const searchedProjects = useMemo(() => {
+    if (!searchQuery.trim()) return filteredProjects
+    const q = searchQuery.toLowerCase()
+    return filteredProjects.filter((project) => {
+      const text = [
+        project.title,
+        project.description || "",
+        ...(project.tags || []),
+      ].join(" ").toLowerCase()
+      return text.includes(q)
+    })
+  }, [filteredProjects, searchQuery])
+
   // 프로젝트 데이터를 BlogItem 형식으로 변환
-  const blogItems: BlogItem[] = filteredProjects.map((project) => ({
+  const blogItems: BlogItem[] = searchedProjects.map((project) => ({
     id: project.id,
     title: project.title,
     slug: `/projects/${project.id}`,
     description: project.description || "",
     image: getArchiveThumbnail(project),
-    createdAt: project.date || "날짜 없음",
-    author: "팀",
+    createdAt: project.date || "",
+    author: project.author || "팀",
     readTime: project.difficulty || "5분 읽기",
     viewCount: project.view_count,
+    commentCount: commentCounts[project.id] || 0,
   }))
 
   if (loading) {
@@ -100,6 +120,7 @@ function ProjectsContent() {
 
 export default function ProjectsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -117,11 +138,11 @@ export default function ProjectsPage() {
       )}
 
       <div className="flex-1 flex flex-col transition-all duration-300">
-        <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} onSearchChange={setSearchQuery} />
 
         <main className="flex-1">
           <Suspense fallback={<div className="container mx-auto max-w-5xl px-6 py-12">로딩 중...</div>}>
-            <ProjectsContent />
+            <ProjectsContent searchQuery={searchQuery} />
           </Suspense>
         </main>
       </div>

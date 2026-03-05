@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { LayoutGrid, List, Eye } from 'lucide-react'
+import { LayoutGrid, List, Eye, MessageCircle } from 'lucide-react'
 import { LazyImage } from './lazy-image'
 
 export interface BlogItem {
@@ -15,6 +15,7 @@ export interface BlogItem {
   author: string
   readTime: string
   viewCount?: number
+  commentCount?: number
 }
 
 type ViewMode = 'grid' | 'list'
@@ -136,10 +137,23 @@ export function BlogSection({
               <div className="space-y-2 px-2 pb-2">
                 <div className="text-muted-foreground flex items-center gap-2 text-[11px] sm:text-xs">
                   <p>{blog.author} 작성</p>
-                  <div className="bg-muted-foreground size-1 rounded-full" />
-                  <p>{blog.createdAt}</p>
+                  {blog.createdAt && (
+                    <>
+                      <div className="bg-muted-foreground size-1 rounded-full" />
+                      <p>{blog.createdAt}</p>
+                    </>
+                  )}
                   <div className="bg-muted-foreground size-1 rounded-full" />
                   <p>{blog.readTime}</p>
+                  {blog.commentCount !== undefined && blog.commentCount > 0 && (
+                    <>
+                      <div className="bg-muted-foreground size-1 rounded-full" />
+                      <div className="flex items-center gap-0.5">
+                        <MessageCircle className="h-3 w-3" />
+                        <p>{blog.commentCount}</p>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <h2 className="line-clamp-2 text-lg leading-5 font-semibold tracking-tight text-black">
                   {blog.title}
@@ -181,10 +195,20 @@ export function BlogSection({
                 <div className="flex items-center justify-between gap-4 mt-2">
                   <div className="text-muted-foreground flex items-center gap-2 text-xs">
                     <p>{blog.author}</p>
-                    <div className="bg-muted-foreground size-1 rounded-full" />
-                    <p>{blog.createdAt}</p>
+                    {blog.createdAt && (
+                      <>
+                        <div className="bg-muted-foreground size-1 rounded-full" />
+                        <p>{blog.createdAt}</p>
+                      </>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    {blog.commentCount !== undefined && blog.commentCount > 0 && (
+                      <div className="flex items-center gap-1">
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        <span>{blog.commentCount}</span>
+                      </div>
+                    )}
                     {blog.viewCount !== undefined && (
                       <div className="flex items-center gap-1">
                         <Eye className="h-3.5 w-3.5" />

@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip } from "lucide-react"
+import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle } from "lucide-react"
+import { CommentSection } from "@/components/comment-section"
+import { getCommentCounts } from "@/lib/supabase-comments"
 import { useRouter } from "next/navigation"
 import { getAttachments, formatFileSize, getFileIconType } from "@/lib/supabase-attachments"
 import type { Archive, Attachment } from "@/types/archive"
@@ -39,11 +41,15 @@ function AttachmentIcon({ type }: { type: string }) {
 export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps) {
   const router = useRouter()
   const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [commentCount, setCommentCount] = useState(0)
 
-  // 첨부파일 로드
+  // 첨부파일 + 댓글 수 로드
   useEffect(() => {
     if (archive.id) {
       getAttachments(archive.id).then(setAttachments)
+      getCommentCounts([archive.id]).then((counts) => {
+        setCommentCount(counts[archive.id] || 0)
+      })
     }
   }, [archive.id])
 
@@ -75,7 +81,7 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
 
       {/* Date */}
       <div className="text-sm text-gray-500 mb-6">
-        {archive.date || "날짜 없음"} · {archive.subCategory || archive.category}
+        {[archive.date, archive.subCategory || archive.category].filter(Boolean).join(" · ")}
       </div>
 
       {/* Title */}
@@ -116,6 +122,18 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
                 <div>
                   <span className="font-medium">조회수:</span> {archive.view_count.toLocaleString()}
                 </div>
+              )}
+              {commentCount > 0 && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <button
+                    onClick={() => document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" })}
+                    className="flex items-center gap-1 hover:text-black transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>{commentCount}</span>
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -188,6 +206,9 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
           </div>
         </div>
       )}
+
+      {/* Comment Section */}
+      <CommentSection archiveId={archive.id} />
 
       {/* Related Section */}
       {relatedSection}

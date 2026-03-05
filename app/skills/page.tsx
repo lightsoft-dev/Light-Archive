@@ -5,16 +5,18 @@ import { useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
 import { getSkills } from "@/lib/supabase-archive"
+import { getCommentCounts } from "@/lib/supabase-comments"
 import { getArchiveThumbnail } from "@/lib/utils"
 import type { Archive } from "@/types/archive"
 import { BlogSection, type BlogItem } from "@/components/ui/blog-section"
 
-function SkillsContent() {
+function SkillsContent({ searchQuery }: { searchQuery: string }) {
   const searchParams = useSearchParams()
   const category = searchParams.get("category") || "all"
 
   // Supabase에서 데이터 가져오기
   const [skills, setSkills] = useState<Archive[]>([])
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,6 +24,10 @@ function SkillsContent() {
       try {
         const data = await getSkills()
         setSkills(data)
+        // 댓글 수 일괄 조회
+        const ids = data.map((s) => s.id)
+        const counts = await getCommentCounts(ids)
+        setCommentCounts(counts)
       } catch (error) {
         console.error("Failed to fetch skills:", error)
       } finally {
@@ -47,17 +53,32 @@ function SkillsContent() {
     return skills.filter((skill) => skill.sub_category === targetCategory)
   }, [skills, category])
 
+  // 검색 필터링
+  const searchedSkills = useMemo(() => {
+    if (!searchQuery.trim()) return filteredSkills
+    const q = searchQuery.toLowerCase()
+    return filteredSkills.filter((skill) => {
+      const text = [
+        skill.title,
+        skill.description || "",
+        ...(skill.tags || []),
+      ].join(" ").toLowerCase()
+      return text.includes(q)
+    })
+  }, [filteredSkills, searchQuery])
+
   // 스킬 데이터를 BlogItem 형식으로 변환
-  const blogItems: BlogItem[] = filteredSkills.map((skill) => ({
+  const blogItems: BlogItem[] = searchedSkills.map((skill) => ({
     id: skill.id,
     title: skill.title,
     slug: `/skills/${skill.id}`,
     description: skill.description || "",
     image: getArchiveThumbnail(skill),
-    createdAt: skill.date || "날짜 없음",
-    author: "팀",
+    createdAt: skill.date || "",
+    author: skill.author || "팀",
     readTime: skill.difficulty || "5분 읽기",
     viewCount: skill.view_count,
+    commentCount: commentCounts[skill.id] || 0,
   }))
 
   if (loading) {
@@ -86,6 +107,7 @@ function SkillsContent() {
 
 export default function SkillsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -103,11 +125,11 @@ export default function SkillsPage() {
       )}
 
       <div className="flex-1 flex flex-col transition-all duration-300">
-        <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} onSearchChange={setSearchQuery} />
 
         <main className="flex-1">
           <Suspense fallback={<div className="container mx-auto max-w-5xl px-6 py-12">로딩 중...</div>}>
-            <SkillsContent />
+            <SkillsContent searchQuery={searchQuery} />
           </Suspense>
         </main>
       </div>

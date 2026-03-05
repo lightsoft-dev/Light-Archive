@@ -1,25 +1,30 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
 import { ArticleContent } from "@/components/article-content"
 import { RecommendedArticles } from "@/components/recommended-articles"
 import { SearchResults } from "@/components/search-results"
 import { Footerdemo } from "@/components/ui/footer-section"
-import { mockPosts } from "@/components/mock/posts"
+import { getAllArchives } from "@/lib/supabase-archive"
 import { searchPosts } from "@/lib/search-utils"
-import { Post } from "@/types/archive"
+import type { Archive, Post } from "@/types/archive"
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [archives, setArchives] = useState<Archive[]>([])
+
+  useEffect(() => {
+    getAllArchives().then(setArchives)
+  }, [])
 
   // 검색 결과를 메모이제이션하여 성능 최적화
   const searchResults = useMemo(() => {
-    return searchPosts(mockPosts, searchQuery)
-  }, [searchQuery])
+    return searchPosts(archives, searchQuery)
+  }, [archives, searchQuery])
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query)
