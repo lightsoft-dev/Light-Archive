@@ -7,12 +7,13 @@ import { supabase } from "./supabase"
 import type { Archive } from "@/types/archive"
 
 /**
- * 모든 아카이브 가져오기
+ * 모든 아카이브 가져오기 (공개용 - published만)
  */
 export async function getAllArchives(): Promise<Archive[]> {
   const { data, error } = await supabase
     .from("archive_items")
     .select("*")
+    .eq("status", "published")
     .order("created_at", { ascending: false })
 
   if (error) {
