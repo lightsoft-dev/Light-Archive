@@ -25,6 +25,23 @@ export async function getAllArchives(): Promise<Archive[]> {
 }
 
 /**
+ * 모든 아카이브 가져오기 (어드민용 - 모든 상태 포함)
+ */
+export async function getAllArchivesAdmin(): Promise<Archive[]> {
+  const { data, error } = await supabase
+    .from("archive_items")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching archives:", error)
+    return []
+  }
+
+  return data || []
+}
+
+/**
  * 카테고리별 아카이브 가져오기 (공개용 - published만)
  */
 export async function getArchivesByCategory(category: string): Promise<Archive[]> {

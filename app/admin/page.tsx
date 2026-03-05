@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-import { getAllArchives, deleteArchive } from "@/lib/supabase-archive"
+import { getAllArchivesAdmin, deleteArchive } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
 import { toast } from "sonner"
 
@@ -80,7 +80,7 @@ export default function AdminPage() {
   const fetchArchives = async () => {
     setLoading(true)
     try {
-      const data = await getAllArchives()
+      const data = await getAllArchivesAdmin()
       setArchives(data)
     } catch (error) {
       console.error("Failed to fetch archives:", error)
