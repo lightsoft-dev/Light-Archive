@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle } from "lucide-react"
+import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle, Share2, Check } from "lucide-react"
 import { CommentSection } from "@/components/comment-section"
 import { getCommentCounts } from "@/lib/supabase-comments"
 import { useRouter } from "next/navigation"
@@ -42,6 +42,7 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
   const router = useRouter()
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [commentCount, setCommentCount] = useState(0)
+  const [copied, setCopied] = useState(false)
 
   // 첨부파일 + 댓글 수 로드
   useEffect(() => {
@@ -68,16 +69,42 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
     router.back()
   }
 
+  const handleShare = async () => {
+    const url = window.location.href
+    // 모바일 네이티브 공유 시트 지원 시 사용
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: archive.title, url })
+        return
+      } catch {
+        // 사용자가 공유 취소한 경우 — 무시
+      }
+    }
+    // 폴백: 클립보드 복사
+    await navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
-      {/* Back Button */}
-      <button
-        onClick={handleBack}
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        이전으로
-      </button>
+      {/* Back Button & Share */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          이전으로
+        </button>
+        <button
+          onClick={handleShare}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-black transition-colors"
+        >
+          {copied ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
+          {copied ? "복사됨" : "링크 공유"}
+        </button>
+      </div>
 
       {/* Date */}
       <div className="text-sm text-gray-500 mb-6">
