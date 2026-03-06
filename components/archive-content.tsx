@@ -47,11 +47,12 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  // 본문 내 이미지 클릭 시 라이트박스 열기
+  // 본문 내 이미지 클릭 + 넓은 테이블 가로 스크롤 래핑
   useEffect(() => {
     const container = contentRef.current
     if (!container) return
 
+    // 이미지 클릭 → 라이트박스
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       if (target.tagName === "IMG") {
@@ -59,6 +60,15 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
         if (src) setViewerImage(src)
       }
     }
+
+    // 넓은 테이블을 스크롤 가능한 래퍼로 감싸기
+    container.querySelectorAll("table").forEach((table) => {
+      if (table.parentElement?.classList.contains("table-scroll-wrapper")) return
+      const wrapper = document.createElement("div")
+      wrapper.className = "table-scroll-wrapper overflow-x-auto -mx-2 px-2 my-6"
+      table.parentNode?.insertBefore(wrapper, table)
+      wrapper.appendChild(table)
+    })
 
     container.addEventListener("click", handleClick)
     return () => container.removeEventListener("click", handleClick)
@@ -217,7 +227,7 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
       {archive.content ? (
         <div
           ref={contentRef}
-          className="space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div]:my-12 [&_div]:rounded-2xl [&_div]:overflow-hidden [&_img]:w-full [&_img]:h-auto [&_img]:cursor-zoom-in [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-blue-800 [&_table]:w-full [&_table]:border-collapse [&_table]:my-6 [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-semibold [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 [&_tr:hover]:bg-gray-50"
+          className="space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div:not(.table-scroll-wrapper)]:my-12 [&_div:not(.table-scroll-wrapper)]:rounded-2xl [&_div:not(.table-scroll-wrapper)]:overflow-hidden [&_img]:w-full [&_img]:h-auto [&_img]:cursor-zoom-in [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-blue-800 [&_table]:w-full [&_table]:border-collapse [&_table]:my-0 [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-semibold [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 [&_tr:hover]:bg-gray-50"
           dangerouslySetInnerHTML={{ __html: archive.content }}
         />
       ) : (
