@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle, Share2, Check } from "lucide-react"
 import { CommentSection } from "@/components/comment-section"
+import { ImageViewer } from "@/components/image-viewer"
 import { getCommentCounts } from "@/lib/supabase-comments"
 import { useRouter } from "next/navigation"
 import { getAttachments, formatFileSize, getFileIconType } from "@/lib/supabase-attachments"
@@ -43,6 +44,25 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [commentCount, setCommentCount] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // 본문 내 이미지 클릭 시 라이트박스 열기
+  useEffect(() => {
+    const container = contentRef.current
+    if (!container) return
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === "IMG") {
+        const src = (target as HTMLImageElement).src
+        if (src) setViewerImage(src)
+      }
+    }
+
+    container.addEventListener("click", handleClick)
+    return () => container.removeEventListener("click", handleClick)
+  }, [archive.content])
 
   // 첨부파일 + 댓글 수 로드
   useEffect(() => {
@@ -183,7 +203,10 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
 
       {/* Archive Image */}
       {archive.image && (
-        <div className="mb-16 bg-gray-100 rounded-2xl overflow-hidden">
+        <div
+          className="mb-16 bg-gray-100 rounded-2xl overflow-hidden cursor-zoom-in"
+          onClick={() => setViewerImage(archive.image!)}
+        >
           <div className="aspect-video">
             <img src={archive.image} alt={archive.title} className="w-full h-full object-cover" />
           </div>
@@ -193,7 +216,8 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
       {/* Content */}
       {archive.content ? (
         <div
-          className="space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div]:my-12 [&_div]:rounded-2xl [&_div]:overflow-hidden [&_img]:w-full [&_img]:h-auto [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-blue-800 [&_table]:w-full [&_table]:border-collapse [&_table]:my-6 [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-semibold [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 [&_tr:hover]:bg-gray-50"
+          ref={contentRef}
+          className="space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div]:my-12 [&_div]:rounded-2xl [&_div]:overflow-hidden [&_img]:w-full [&_img]:h-auto [&_img]:cursor-zoom-in [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-blue-800 [&_table]:w-full [&_table]:border-collapse [&_table]:my-6 [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-semibold [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 [&_tr:hover]:bg-gray-50"
           dangerouslySetInnerHTML={{ __html: archive.content }}
         />
       ) : (
@@ -239,6 +263,15 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
 
       {/* Related Section */}
       {relatedSection}
+
+      {/* Image Viewer Lightbox */}
+      {viewerImage && (
+        <ImageViewer
+          src={viewerImage}
+          alt={archive.title}
+          onClose={() => setViewerImage(null)}
+        />
+      )}
     </article>
   )
 }
