@@ -411,15 +411,15 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-black mb-4">
             <ArrowLeft className="w-4 h-4" />
             홈으로 돌아가기
           </Link>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-semibold">포스트 관리</h1>
+              <h1 className="text-2xl md:text-4xl font-semibold">포스트 관리</h1>
               <p className="text-neutral-600 mt-2">블로그 포스트를 관리하고 편집하세요.</p>
             </div>
             <Link href="/admin/new">
@@ -463,7 +463,7 @@ export default function AdminPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (

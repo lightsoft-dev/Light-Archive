@@ -266,7 +266,7 @@ export default function EditPostPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-semibold">아카이브 수정</h1>
+                <h1 className="text-2xl md:text-4xl font-semibold">아카이브 수정</h1>
                 {status === "draft" && (
                   <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-yellow-100 text-yellow-800">
                     임시저장
@@ -282,7 +282,7 @@ export default function EditPostPage() {
                 기술 문서 또는 프로젝트 아카이브를 수정하세요
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 onClick={() => setDeleteDialogOpen(true)}
@@ -331,7 +331,7 @@ export default function EditPostPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-base font-semibold flex items-center gap-2">
                   카테고리 <span className="text-red-500">*</span>
@@ -391,7 +391,7 @@ export default function EditPostPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="difficulty" className="text-base font-semibold">
                   난이도

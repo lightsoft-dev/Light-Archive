@@ -38,7 +38,7 @@ export function RecommendedArticles() {
   }
 
   return (
-    <aside className="fixed bottom-6 right-6 w-80 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg z-30 overflow-hidden border border-gray-200/50">
+    <aside className="hidden lg:block fixed bottom-6 right-6 w-80 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg z-30 overflow-hidden border border-gray-200/50">
       <div className="p-4 flex items-center justify-between border-b border-gray-200/50">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-gray-600" />

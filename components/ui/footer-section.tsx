@@ -13,8 +13,8 @@ import { Instagram, Github } from "lucide-react"
 function Footerdemo() {
   return (
     <footer className="relative border-t bg-background text-foreground transition-colors duration-300">
-      <div className="container mx-auto px-4 py-12 md:px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
+      <div className="w-full mx-auto px-4 py-12 md:px-6 lg:px-8">
+        <div className="grid gap-8 md:gap-12 md:grid-cols-2 lg:grid-cols-3">
           {/* About */}
           <div className="relative">
             <h2 className="mb-4 text-3xl font-bold tracking-tight">Light Archive</h2>

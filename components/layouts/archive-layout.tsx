@@ -18,8 +18,15 @@ interface ArchiveLayoutProps {
  * - Projects와 Skills 페이지에서 공통으로 사용
  */
 export function ArchiveLayout({ children, archiveId }: ArchiveLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentArchive, setCurrentArchive] = useState<Archive | null>(null)
+
+  // 데스크톱에서는 사이드바 열린 상태로 시작
+  useEffect(() => {
+    if (window.innerWidth >= 1024) {
+      setSidebarOpen(true)
+    }
+  }, [])
 
   useEffect(() => {
     async function fetchCurrentArchive() {
@@ -33,7 +40,7 @@ export function ArchiveLayout({ children, archiveId }: ArchiveLayoutProps) {
   }, [archiveId])
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white overflow-hidden">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -48,7 +55,7 @@ export function ArchiveLayout({ children, archiveId }: ArchiveLayoutProps) {
         />
       )}
 
-      <div className="flex-1 flex flex-col transition-all duration-300">
+      <div className="flex-1 min-w-0 flex flex-col transition-all duration-300">
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1 relative">

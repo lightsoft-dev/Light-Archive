@@ -98,8 +98,10 @@ export default function RootLayout({
         <StructuredData type="website" />
         <StructuredData type="organization" />
       </head>
-      <body className={`${inter.className} font-sans antialiased`}>
-        {children}
+      <body className={`${inter.className} font-sans antialiased overflow-x-hidden`}>
+        <div className="w-full max-w-[100vw] overflow-x-hidden">
+          {children}
+        </div>
         <Analytics />
         <DevTools />
       </body>

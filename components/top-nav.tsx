@@ -33,7 +33,7 @@ export function TopNav({ onMenuClick, onSearchChange }: TopNavProps) {
 
   return (
     <header className="bg-white/40 backdrop-blur-xl sticky top-0 z-20">
-      <div className="flex items-center justify-between gap-4 px-8 py-4">
+      <div className="flex items-center justify-between gap-4 px-4 md:px-8 py-4">
         <button
           onClick={onMenuClick}
           className="lg:hidden p-2 hover:bg-gray-100/50 rounded-md transition-colors"
@@ -54,7 +54,7 @@ export function TopNav({ onMenuClick, onSearchChange }: TopNavProps) {
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="제목, 설명, 태그로 검색..."
-                className="w-64 md:w-80 pl-10 pr-10 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                className="w-full max-w-64 md:max-w-80 pl-10 pr-10 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
                 autoFocus
               />
               {searchQuery && (

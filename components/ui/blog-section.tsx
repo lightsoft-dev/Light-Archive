@@ -42,7 +42,7 @@ export function BlogSection({
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
   return (
-    <div className={`mx-auto w-full max-w-5xl grow ${className}`}>
+    <div className={`relative mx-auto w-full max-w-5xl grow overflow-hidden ${className}`}>
       {/* 배경 효과 */}
       <div
         aria-hidden
@@ -55,7 +55,7 @@ export function BlogSection({
 
       {/* 헤더 */}
       <div className="space-y-1 px-4 py-8">
-        <h1 className="font-mono text-4xl font-bold tracking-wide">
+        <h1 className="font-mono text-2xl md:text-4xl font-bold tracking-wide">
           {title}
         </h1>
         <p className="text-muted-foreground text-base">
@@ -119,12 +119,12 @@ export function BlogSection({
           해당 카테고리의 항목이 없습니다.
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid p-4 md:grid-cols-2 lg:grid-cols-3 z-10 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 p-4 z-10 gap-4">
           {blogs.map((blog) => (
             <Link
               href={blog.slug}
               key={blog.id}
-              className="group hover:bg-gray-50 active:bg-gray-100 flex flex-col gap-2 rounded-lg p-2 duration-75 transition-colors"
+              className="group hover:bg-gray-50 active:bg-gray-100 flex flex-col gap-2 rounded-lg p-2 duration-75 transition-colors min-w-0"
             >
               <LazyImage
                 src={blog.image}
@@ -135,7 +135,7 @@ export function BlogSection({
                 className="transition-all duration-500 group-hover:scale-105"
               />
               <div className="space-y-2 px-2 pb-2">
-                <div className="text-muted-foreground flex items-center gap-2 text-[11px] sm:text-xs">
+                <div className="text-muted-foreground flex items-center gap-2 text-[11px] sm:text-xs flex-wrap">
                   <p>{blog.author} 작성</p>
                   {blog.createdAt && (
                     <>
@@ -155,7 +155,7 @@ export function BlogSection({
                     </>
                   )}
                 </div>
-                <h2 className="line-clamp-2 text-lg leading-5 font-semibold tracking-tight text-black">
+                <h2 className="line-clamp-2 text-base sm:text-lg leading-5 font-semibold tracking-tight text-black break-words">
                   {blog.title}
                 </h2>
                 <p className="text-muted-foreground line-clamp-3 text-sm">

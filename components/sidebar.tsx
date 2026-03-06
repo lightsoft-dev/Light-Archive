@@ -11,6 +11,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
+  // 모바일에서 링크 클릭 시 사이드바 닫기
+  const handleLinkClick = () => {
+    if (window.innerWidth < 1024) {
+      onClose()
+    }
+  }
+
   return (
     <>
       {/* Toggle button when sidebar is closed (desktop only) */}
@@ -67,6 +74,7 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                           {item.href ? (
                             <Link
                               href={item.href}
+                              onClick={handleLinkClick}
                               className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
                             >
                               {item.label}
@@ -82,6 +90,7 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                                 <Link
                                   key={child.id}
                                   href={child.href}
+                                  onClick={handleLinkClick}
                                   className="block px-3 py-2 text-sm text-gray-500 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
                                 >
                                   {child.label}
@@ -100,6 +109,7 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                       ) : item.href ? (
                         <Link
                           href={item.href}
+                          onClick={handleLinkClick}
                           className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-100/50 rounded-md cursor-pointer transition-colors"
                         >
                           {item.label}

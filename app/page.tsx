@@ -12,7 +12,14 @@ import { searchPosts } from "@/lib/search-utils"
 import type { Archive, Post } from "@/types/archive"
 
 export default function Home() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // 데스크톱에서는 사이드바 열린 상태로 시작
+  useEffect(() => {
+    if (window.innerWidth >= 1024) {
+      setIsSidebarOpen(true)
+    }
+  }, [])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   const [archives, setArchives] = useState<Archive[]>([])
@@ -45,7 +52,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white overflow-hidden">
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -61,7 +68,7 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col transition-all duration-300">
+      <div className="flex-1 min-w-0 flex flex-col transition-all duration-300">
         <TopNav
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           onSearchChange={handleSearchChange}

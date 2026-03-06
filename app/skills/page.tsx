@@ -92,7 +92,7 @@ function SkillsContent({ searchQuery }: { searchQuery: string }) {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl px-6 py-12">
+    <div className="w-full mx-auto max-w-5xl py-12">
       <BlogSection
         title="기술"
         description="기술 문서와 가이드를 확인하세요"
@@ -106,11 +106,17 @@ function SkillsContent({ searchQuery }: { searchQuery: string }) {
 }
 
 export default function SkillsPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    if (window.innerWidth >= 1024) {
+      setSidebarOpen(true)
+    }
+  }, [])
   const [searchQuery, setSearchQuery] = useState("")
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white overflow-hidden">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -124,7 +130,7 @@ export default function SkillsPage() {
         />
       )}
 
-      <div className="flex-1 flex flex-col transition-all duration-300">
+      <div className="flex-1 min-w-0 flex flex-col transition-all duration-300">
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} onSearchChange={setSearchQuery} />
 
         <main className="flex-1">
