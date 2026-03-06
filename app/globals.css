@@ -127,3 +127,18 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/* 본문 내 테이블: 넓으면 가로 스크롤 가능 */
+.archive-content table {
+  display: block !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* 테이블 감싼 div의 overflow-hidden 해제 */
+.archive-content div:has(> table) {
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
