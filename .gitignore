@@ -27,6 +27,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# OS
+.DS_Store
+
+# Claude Code / OMC
+.omc/
+.mcp.json
+
 # python (MCP server)
 __pycache__/
 *.py[cod]
