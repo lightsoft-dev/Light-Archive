@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "light-archive-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // 기존 Durable Object 삭제 마이그레이션
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["LightArchiveMCP"]
+    },
+    {
+      "tag": "v2",
+      "deleted_classes": ["LightArchiveMCP"]
+    }
+  ]
+
+  // Supabase 환경변수는 wrangler secret으로 설정됨
+  // npx wrangler secret put SUPABASE_URL
+  // npx wrangler secret put SUPABASE_ANON_KEY
+}

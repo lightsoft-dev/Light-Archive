@@ -1,0 +1,22 @@
+{
+  "name": "light-archive-mcp",
+  "version": "1.0.0",
+  "description": "Light Archive MCP Server - Cloudflare Workers",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@supabase/supabase-js": "^2.99.1",
+    "agents": "^0.7.6",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260316.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.73.0"
+  }
+}
