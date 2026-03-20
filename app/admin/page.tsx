@@ -300,7 +300,10 @@ export default function AdminPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>작업</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(archive.id)}>ID 복사</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const path = archive.category === "프로젝트" ? "projects" : "skills"
+                navigator.clipboard.writeText(`https://archive.lightsoft.dev/${path}/${archive.id}`)
+              }}>링크 복사</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleEdit(archive)}>수정</DropdownMenuItem>
               <DropdownMenuSeparator />
