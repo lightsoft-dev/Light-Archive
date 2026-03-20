@@ -131,25 +131,31 @@ html {
 /* 본문 내 테이블: 넓으면 가로 스크롤 가능 (스크롤바 항상 표시) */
 .archive-content table {
   display: block !important;
-  overflow-x: auto !important;
+  overflow-x: scroll !important;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
   max-width: 100%;
   scrollbar-width: thin;
-  scrollbar-color: #d1d5db transparent;
+  scrollbar-color: #9ca3af #f3f4f6;
 }
 
 .archive-content table::-webkit-scrollbar {
-  height: 6px;
+  height: 8px;
+  display: block !important;
 }
 
 .archive-content table::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f3f4f6;
+  border-radius: 4px;
 }
 
 .archive-content table::-webkit-scrollbar-thumb {
-  background-color: #d1d5db;
-  border-radius: 3px;
+  background-color: #9ca3af;
+  border-radius: 4px;
+}
+
+.archive-content table::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
 }
 
 /* 테이블 감싼 div의 overflow-hidden 해제 */
