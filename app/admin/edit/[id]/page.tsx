@@ -55,6 +55,7 @@ export default function EditPostPage() {
   const [author, setAuthor] = useState("")
   const [date, setDate] = useState("")
   const [status, setStatus] = useState<"draft" | "published" | "archived">("draft")
+  const [githubUrl, setGithubUrl] = useState("")
 
   // AI 초안 생성 관련 상태
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
@@ -91,6 +92,7 @@ export default function EditPostPage() {
         setAuthor(archive.author || "")
         setDate(archive.date || "")
         setStatus(archive.status || "draft")
+        setGithubUrl(archive.github_url || "")
 
         // 첨부파일 로드
         const files = await getAttachments(postId)
@@ -132,6 +134,7 @@ export default function EditPostPage() {
         difficulty,
         content,
         author,
+        github_url: githubUrl || undefined,
         date,
         status: targetStatus,
       }
@@ -426,6 +429,22 @@ export default function EditPostPage() {
                   className="mt-2"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="github-url" className="text-base font-semibold">
+                GitHub URL
+              </Label>
+              <p className="text-sm text-gray-500 mt-1 mb-2">
+                관련 GitHub 저장소 링크를 입력하세요 (선택사항)
+              </p>
+              <Input
+                id="github-url"
+                value={githubUrl}
+                onChange={(e) => setGithubUrl(e.target.value)}
+                placeholder="https://github.com/..."
+                className="mt-2"
+              />
             </div>
 
             <div>

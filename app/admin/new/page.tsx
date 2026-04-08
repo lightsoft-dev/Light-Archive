@@ -34,6 +34,7 @@ export default function NewPostPage() {
   const [difficulty, setDifficulty] = useState<string>("")
   const [content, setContent] = useState("")
   const [author, setAuthor] = useState("")
+  const [githubUrl, setGithubUrl] = useState("")
 
   // 첨부파일 관련 상태
   const [archiveId] = useState(() => `${Date.now()}-${Math.random().toString(36).substring(7)}`)
@@ -67,6 +68,7 @@ export default function NewPostPage() {
         difficulty,
         content,
         author,
+        github_url: githubUrl || undefined,
         date: new Date().toLocaleDateString("ko-KR"),
         status: asDraft ? "draft" as const : "published" as const,
       }
@@ -311,6 +313,22 @@ export default function NewPostPage() {
                   className="mt-2"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="github-url" className="text-base font-semibold">
+                GitHub URL
+              </Label>
+              <p className="text-sm text-gray-500 mt-1 mb-2">
+                관련 GitHub 저장소 링크를 입력하세요 (선택사항)
+              </p>
+              <Input
+                id="github-url"
+                value={githubUrl}
+                onChange={(e) => setGithubUrl(e.target.value)}
+                placeholder="https://github.com/..."
+                className="mt-2"
+              />
             </div>
           </div>
 

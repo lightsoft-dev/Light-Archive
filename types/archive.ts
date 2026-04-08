@@ -34,6 +34,9 @@ export interface BaseArchive {
   content?: string // Rich text HTML content
   excerpt?: string // 요약문
 
+  // 외부 링크
+  github_url?: string
+
   // 타임스탬프
   created_at?: string
   updated_at?: string

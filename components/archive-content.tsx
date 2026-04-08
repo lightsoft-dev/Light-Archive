@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle, Share2, Check } from "lucide-react"
+import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle, Share2, Check, Github } from "lucide-react"
 import { CommentSection } from "@/components/comment-section"
 import { ImageViewer } from "@/components/image-viewer"
 import { FloatingToc } from "@/components/floating-toc"
@@ -189,6 +189,21 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
           )}
         </div>
       </div>
+
+      {/* GitHub 링크 */}
+      {archive.github_url && (
+        <div className="mb-8">
+          <a
+            href={archive.github_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="github-shimmer inline-flex items-center gap-2.5 bg-black text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-gray-800 transition-colors"
+          >
+            <Github className="w-4 h-4" />
+            GitHub 저장소 보기
+          </a>
+        </div>
+      )}
 
       {/* 첨부파일 바로가기 */}
       {attachments.length > 0 && (
