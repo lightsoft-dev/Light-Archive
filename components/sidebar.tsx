@@ -39,12 +39,15 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:hidden"}
         `}
       >
-        <div className="p-6 flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between group/header">
           <Link href="/" className="flex items-center gap-2">
             <img src="/가로logo.png" alt="Lightsoft" className="w-full max-w-[180px]" />
           </Link>
           <div className="flex items-center gap-2">
-            <button onClick={onToggle} className="hidden lg:flex p-2 hover:bg-gray-100/50 rounded-md transition-colors">
+            <button
+              onClick={onToggle}
+              className="hidden lg:flex p-2 hover:bg-gray-100/50 rounded-md transition-all duration-200 opacity-0 group-hover/header:opacity-100"
+            >
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <button onClick={onClose} className="lg:hidden p-2 hover:bg-gray-100/50 rounded-md transition-colors">
@@ -127,6 +130,7 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
             ))}
           </div>
         </nav>
+
       </aside>
     </>
   )
