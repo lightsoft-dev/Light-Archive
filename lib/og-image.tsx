@@ -1,22 +1,31 @@
 import { ImageResponse } from "next/og"
+import { readFile } from "node:fs/promises"
+import { join } from "node:path"
 import type { BaseArchive } from "@/types/archive"
 
 export const OG_SIZE = { width: 1200, height: 630 }
 
-// Google Fonts에서 한글 지원 폰트(Noto Sans KR) 로드
-// 구형 UA를 사용하면 woff2 대신 ttf URL을 반환함
-async function loadKoreanFont(text: string): Promise<ArrayBuffer | null> {
+// 로고 이미지를 base64로 로드
+async function loadLogo(): Promise<string | null> {
   try {
-    const css = await fetch(
-      `https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&text=${encodeURIComponent(text)}`,
-      { headers: { "User-Agent": "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)" } }
-    ).then((r) => r.text())
+    const data = await readFile(join(process.cwd(), "public/가로logo.png"), "base64")
+    return `data:image/png;base64,${data}`
+  } catch {
+    return null
+  }
+}
 
-    // TTF URL 추출
-    const match = css.match(/src: url\(([^)]+)\)/)
-    if (!match) return null
-
-    return fetch(match[1]).then((r) => r.arrayBuffer())
+// @fontsource/noto-sans-kr 패키지에서 로컬 woff 파일 로드 (한글 + 라틴)
+async function loadKoreanFont(): Promise<{ korean: ArrayBuffer; latin: ArrayBuffer } | null> {
+  try {
+    const [korean, latin] = await Promise.all([
+      readFile(join(process.cwd(), "node_modules/@fontsource/noto-sans-kr/files/noto-sans-kr-korean-700-normal.woff")),
+      readFile(join(process.cwd(), "node_modules/@fontsource/noto-sans-kr/files/noto-sans-kr-latin-700-normal.woff")),
+    ])
+    return {
+      korean: korean.buffer as ArrayBuffer,
+      latin: latin.buffer as ArrayBuffer,
+    }
   } catch {
     return null
   }
@@ -31,21 +40,14 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
   const title = archive?.title ?? "Light Archive"
   const description = archive?.description ?? archive?.excerpt ?? ""
   const category = archive?.category ?? ""
-  const thumbnailUrl = archive?.thumbnail_url ?? archive?.image ?? null
-
-  // 실제 사용할 텍스트만 subset으로 로드 (폰트 크기 최소화)
-  const fontData = await loadKoreanFont(title + description + category + "Light Archive")
+  const [fonts, logoSrc] = await Promise.all([loadKoreanFont(), loadLogo()])
 
   const options: ConstructorParameters<typeof ImageResponse>[1] = {
     ...OG_SIZE,
-    ...(fontData && {
+    ...(fonts && {
       fonts: [
-        {
-          name: "NotoSansKR",
-          data: fontData,
-          weight: 700,
-          style: "normal",
-        },
+        { name: "NotoSansKR", data: fonts.korean, weight: 700, style: "normal" },
+        { name: "NotoSansKR", data: fonts.latin, weight: 700, style: "normal" },
       ],
     }),
   }
@@ -57,79 +59,26 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
           width: "100%",
           height: "100%",
           display: "flex",
-          position: "relative",
-          backgroundColor: "#000",
-          fontFamily: fontData ? "NotoSansKR" : "sans-serif",
+          flexDirection: "column",
+          backgroundColor: "#fff",
+          fontFamily: fonts ? "NotoSansKR" : "sans-serif",
+          padding: "64px",
         }}
       >
-        {/* 썸네일 배경 이미지 (있을 때) */}
-        {thumbnailUrl && (
-          <img
-            src={thumbnailUrl}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              opacity: 0.45,
-            }}
-          />
-        )}
+        {/* 상단: 로고 */}
+        <div style={{ display: "flex", marginBottom: "auto" }}>
+          {logoSrc && (
+            <img src={logoSrc} style={{ height: 36 }} />
+          )}
+        </div>
 
-        {/* 하단 그라디언트 오버레이 */}
+        {/* 중앙: 본문 */}
         <div
           style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "75%",
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)",
-            display: "flex",
-          }}
-        />
-
-        {/* 썸네일 없을 때 오른쪽 'LA' 장식 */}
-        {!thumbnailUrl && (
-          <div
-            style={{
-              position: "absolute",
-              right: "60px",
-              top: 0,
-              bottom: 0,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 240,
-                fontWeight: "bold",
-                color: "white",
-                opacity: 0.05,
-                letterSpacing: "-10px",
-                display: "flex",
-              }}
-            >
-              LA
-            </div>
-          </div>
-        )}
-
-        {/* 콘텐츠 */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: "56px 64px",
             display: "flex",
             flexDirection: "column",
-            gap: "14px",
+            gap: "16px",
+            marginBottom: "48px",
           }}
         >
           {/* 카테고리 배지 */}
@@ -138,9 +87,8 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
               style={{
                 display: "flex",
                 alignSelf: "flex-start",
-                backgroundColor: "rgba(255,255,255,0.12)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                color: "rgba(255,255,255,0.85)",
+                backgroundColor: "#000",
+                color: "#fff",
                 padding: "6px 18px",
                 borderRadius: "999px",
                 fontSize: 18,
@@ -153,9 +101,9 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
           {/* 제목 */}
           <div
             style={{
-              fontSize: 58,
+              fontSize: 60,
               fontWeight: "bold",
-              color: "white",
+              color: "#000",
               lineHeight: 1.2,
               display: "flex",
             }}
@@ -168,32 +116,27 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
             <div
               style={{
                 fontSize: 24,
-                color: "rgba(255,255,255,0.65)",
+                color: "#666",
                 lineHeight: 1.5,
                 display: "flex",
               }}
             >
-              {description.length > 75 ? description.slice(0, 75) + "…" : description}
+              {description.length > 80 ? description.slice(0, 80) + "…" : description}
             </div>
           )}
+        </div>
 
-          {/* 브랜딩 */}
-          <div
-            style={{
-              display: "flex",
-              marginTop: "4px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 20,
-                color: "rgba(255,255,255,0.4)",
-                letterSpacing: "0.08em",
-                display: "flex",
-              }}
-            >
-              archive.lightsoft.dev
-            </div>
+        {/* 하단: 구분선 + URL */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+          }}
+        >
+          <div style={{ display: "flex", height: 1, backgroundColor: "#e5e5e5" }} />
+          <div style={{ display: "flex", fontSize: 20, color: "#999" }}>
+            archive.lightsoft.dev
           </div>
         </div>
       </div>

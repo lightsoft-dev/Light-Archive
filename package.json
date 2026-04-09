@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@fontsource/noto-sans-kr": "^5.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@radix-ui/react-accordion": "1.2.2",
