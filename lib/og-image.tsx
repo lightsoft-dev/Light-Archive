@@ -4,15 +4,16 @@ import type { BaseArchive } from "@/types/archive"
 export const OG_SIZE = { width: 1200, height: 630 }
 
 // Google Fonts에서 한글 지원 폰트(Noto Sans KR) 로드
-async function loadKoreanFont(): Promise<ArrayBuffer | null> {
+// 구형 UA를 사용하면 woff2 대신 ttf URL을 반환함
+async function loadKoreanFont(text: string): Promise<ArrayBuffer | null> {
   try {
     const css = await fetch(
-      "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700",
-      { headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" } }
+      `https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&text=${encodeURIComponent(text)}`,
+      { headers: { "User-Agent": "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)" } }
     ).then((r) => r.text())
 
-    // CSS에서 ttf/otf URL 추출
-    const match = css.match(/src: url\(([^)]+)\) format\('(?:truetype|opentype)'\)/)
+    // TTF URL 추출
+    const match = css.match(/src: url\(([^)]+)\)/)
     if (!match) return null
 
     return fetch(match[1]).then((r) => r.arrayBuffer())
@@ -27,12 +28,13 @@ type ArchiveForOG = Pick<
 >
 
 export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
-  const fontData = await loadKoreanFont()
-
   const title = archive?.title ?? "Light Archive"
   const description = archive?.description ?? archive?.excerpt ?? ""
   const category = archive?.category ?? ""
   const thumbnailUrl = archive?.thumbnail_url ?? archive?.image ?? null
+
+  // 실제 사용할 텍스트만 subset으로 로드 (폰트 크기 최소화)
+  const fontData = await loadKoreanFont(title + description + category + "Light Archive")
 
   const options: ConstructorParameters<typeof ImageResponse>[1] = {
     ...OG_SIZE,
@@ -135,7 +137,7 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
             <div
               style={{
                 display: "flex",
-                width: "fit-content",
+                alignSelf: "flex-start",
                 backgroundColor: "rgba(255,255,255,0.12)",
                 border: "1px solid rgba(255,255,255,0.2)",
                 color: "rgba(255,255,255,0.85)",
