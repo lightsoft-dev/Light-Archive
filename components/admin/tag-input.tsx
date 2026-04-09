@@ -16,6 +16,9 @@ export function TagInput({ tags, onChange, placeholder = "태그를 입력하고
   const [inputValue, setInputValue] = useState("")
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // 한글 IME 조합 중에는 이벤트 무시 (한 글자씩 추가되는 문제 방지)
+    if (e.nativeEvent.isComposing) return
+
     // 스페이스 또는 Enter로 태그 추가
     if ((e.key === " " || e.key === "Enter") && inputValue.trim()) {
       e.preventDefault()
