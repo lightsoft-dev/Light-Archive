@@ -20,7 +20,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${archive.title} | Light Archive`
   const description = archive.description || archive.excerpt || "Lightsoft 팀의 프로젝트 아카이브"
-  const imageUrl = archive.thumbnail_url || archive.image
 
   return {
     title,
@@ -30,13 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: `/projects/${id}`,
       type: "article",
-      ...(imageUrl && { images: [{ url: imageUrl }] }),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(imageUrl && { images: [imageUrl] }),
     },
   }
 }
