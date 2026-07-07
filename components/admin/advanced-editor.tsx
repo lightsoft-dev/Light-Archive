@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor, EditorContent } from "@tiptap/react"
+import { useEditor, useEditorState, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Image from "@tiptap/extension-image"
@@ -31,6 +31,14 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 
 const lowlight = createLowlight(common)
+
+// 이미지/GIF 크기 프리셋 (조회 화면 컨테이너 폭 기준 %)
+const IMAGE_SIZE_PRESETS = [
+  { label: "작게", width: "25%" },
+  { label: "중간", width: "50%" },
+  { label: "크게", width: "75%" },
+  { label: "원본", width: "100%" },
+] as const
 
 interface AdvancedEditorProps {
   content: string
@@ -107,7 +115,26 @@ export function AdvancedEditor({
       Placeholder.configure({
         placeholder,
       }),
-      Image.configure({
+      // 이미지: width 속성을 추가해서 크기 조절(작게/중간/크게/원본)을 지원
+      // - width는 인라인 style(예: "50%")로 저장 → 조회 화면에서 인라인 style이
+      //   강제 w-full 클래스보다 우선하므로 지정한 크기가 그대로 반영됨
+      Image.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            width: {
+              default: null,
+              // 저장된 HTML에서 width를 다시 읽어올 때: 인라인 style 우선, 없으면 width 속성
+              parseHTML: (element) =>
+                element.style.width || element.getAttribute("width") || null,
+              renderHTML: (attributes) => {
+                if (!attributes.width) return {}
+                return { style: `width: ${attributes.width}` }
+              },
+            },
+          }
+        },
+      }).configure({
         inline: true,
         allowBase64: true,
         HTMLAttributes: {
@@ -186,6 +213,17 @@ export function AdvancedEditor({
     },
   })
 
+  // 이미지 선택 상태를 반응형으로 구독
+  // Tiptap v3는 성능상 editor.isActive()가 렌더 중 자동 반응하지 않으므로,
+  // 이미지 선택 여부/현재 width를 useEditorState로 구독해야 툴바가 갱신됨
+  const imageState = useEditorState({
+    editor,
+    selector: ({ editor }) => ({
+      isImageActive: editor?.isActive("image") ?? false,
+      imageWidth: (editor?.getAttributes("image").width as string | undefined) ?? null,
+    }),
+  })
+
   // 이미지 업로드 함수
   const uploadImage = async (file: File) => {
     if (!editor) return
@@ -256,6 +294,12 @@ export function AdvancedEditor({
     if (url) {
       editor?.chain().focus().setLink({ href: url }).run()
     }
+  }
+
+  // 선택된 이미지의 크기(width)를 지정하는 핸들러
+  // 이미지가 선택된 상태에서만 툴바에 크기 버튼이 노출되므로 항상 image 노드를 대상으로 함
+  const setImageWidth = (width: string) => {
+    editor?.chain().focus().updateAttributes("image", { width }).run()
   }
 
   if (!editor) {
@@ -413,6 +457,33 @@ export function AdvancedEditor({
         >
           <LinkIcon className="h-4 w-4" />
         </Button>
+
+        {/* 이미지 크기 조절: 이미지(GIF 포함)가 선택됐을 때만 노출 */}
+        {imageState?.isImageActive && (
+          <>
+            <div className="w-px h-6 bg-gray-300 mx-1" />
+            <span className="text-xs text-gray-500 px-1">이미지 크기</span>
+            {IMAGE_SIZE_PRESETS.map((preset) => (
+              <Button
+                key={preset.width}
+                type="button"
+                variant="ghost"
+                size="sm"
+                // 버튼 클릭이 에디터를 blur시켜 이미지 선택이 풀리는 걸 막음
+                // → 크기를 연속으로 바꿔가며 조절 가능
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setImageWidth(preset.width)}
+                className={cn(
+                  "h-9 px-2 text-xs",
+                  imageState?.imageWidth === preset.width && "bg-gray-200"
+                )}
+                title={`이미지 크기 ${preset.label} (${preset.width})`}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </>
+        )}
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
