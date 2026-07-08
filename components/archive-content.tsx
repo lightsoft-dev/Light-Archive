@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Download, FileText, FileImage, File, FileCode, Paperclip, MessageCircle, Share2, Check, Github } from "lucide-react"
 import { CommentSection } from "@/components/comment-section"
 import { ImageViewer } from "@/components/image-viewer"
+import { ImageCarouselViewer, type CarouselViewerImage } from "@/components/image-carousel-viewer"
 import { FloatingToc } from "@/components/floating-toc"
 import { getCommentCounts } from "@/lib/supabase-comments"
 import { useRouter } from "next/navigation"
@@ -64,6 +65,43 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
 
     container.addEventListener("click", handleClick)
     return () => container.removeEventListener("click", handleClick)
+  }, [archive.content])
+
+  // 본문 HTML을 "이미지 슬라이더 블록"과 "일반 HTML 조각"으로 분리한다.
+  // - 캐러셀은 dangerouslySetInnerHTML 내부를 DOM 조작하면 React가 되돌리므로,
+  //   정식 React 컴포넌트(ImageCarouselViewer, embla)로 렌더해야 한다.
+  // - 정규식 기반이라 서버/클라이언트에서 동일하게 동작한다(hydration 일치).
+  const contentParts = useMemo<
+    Array<{ type: "html"; html: string } | { type: "carousel"; images: CarouselViewerImage[] }>
+  >(() => {
+    const html = archive.content || ""
+    const parts: Array<
+      { type: "html"; html: string } | { type: "carousel"; images: CarouselViewerImage[] }
+    > = []
+    // <div ... class="...image-carousel..."> ... </div> (내부에 중첩 div 없이 img만 있음)
+    const carouselRe = /<div[^>]*class="[^"]*image-carousel[^"]*"[^>]*>[\s\S]*?<\/div>/g
+    let lastIndex = 0
+    let match: RegExpExecArray | null
+
+    while ((match = carouselRe.exec(html)) !== null) {
+      // 캐러셀 앞의 일반 HTML 조각
+      if (match.index > lastIndex) {
+        parts.push({ type: "html", html: html.slice(lastIndex, match.index) })
+      }
+      // 캐러셀 블록 안의 <img>에서 src/alt 추출
+      const imgTags = match[0].match(/<img[^>]*>/g) || []
+      const images: CarouselViewerImage[] = imgTags.map((tag) => ({
+        src: (tag.match(/src="([^"]*)"/) || [])[1] || "",
+        alt: (tag.match(/alt="([^"]*)"/) || [])[1] || "",
+      }))
+      parts.push({ type: "carousel", images })
+      lastIndex = carouselRe.lastIndex
+    }
+    // 마지막 캐러셀 뒤의 일반 HTML 조각
+    if (lastIndex < html.length) {
+      parts.push({ type: "html", html: html.slice(lastIndex) })
+    }
+    return parts
   }, [archive.content])
 
   // 첨부파일 + 댓글 수 로드
@@ -236,8 +274,20 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
         <div
           ref={contentRef}
           className="archive-content space-y-8 [&_p]:text-lg [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4 [&_h2]:text-3xl [&_h2]:md:text-4xl [&_h2]:font-normal [&_h2]:text-black [&_h2]:mb-6 [&_h2]:mt-12 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4 [&_li]:mb-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-black [&_div]:my-12 [&_div]:rounded-2xl [&_div]:overflow-hidden [&_img]:w-full [&_img]:h-auto [&_img]:cursor-zoom-in [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-blue-800 [&_table]:border-collapse [&_table]:my-6 [&_table]:block [&_table]:overflow-x-scroll [&_table]:max-w-full [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-semibold [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 [&_tr:hover]:bg-gray-50"
-          dangerouslySetInnerHTML={{ __html: archive.content }}
-        />
+        >
+          {contentParts.map((part, i) =>
+            part.type === "carousel" ? (
+              <ImageCarouselViewer key={i} images={part.images} onImageClick={setViewerImage} />
+            ) : (
+              // display:contents 로 감싸서 이 wrapper div가 레이아웃/[&_div] 스타일에 영향 주지 않게 함
+              <div
+                key={i}
+                style={{ display: "contents" }}
+                dangerouslySetInnerHTML={{ __html: part.html }}
+              />
+            )
+          )}
+        </div>
       ) : (
         <div className="space-y-8">
           <p className="text-lg text-gray-700 leading-relaxed">

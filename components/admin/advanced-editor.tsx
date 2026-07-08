@@ -23,12 +23,14 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   Quote,
-  Minus
+  Minus,
+  GalleryHorizontal
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
+import { uploadArchiveImage } from "@/lib/archive-image-upload"
+import { ImageCarousel } from "./extensions/image-carousel"
 
 const lowlight = createLowlight(common)
 
@@ -165,6 +167,8 @@ export function AdvancedEditor({
           class: "border border-gray-300 bg-gray-50 px-4 py-2 font-semibold",
         },
       }),
+      // 이미지 슬라이더(캐러셀): 여러 이미지를 옆으로 넘겨보는 블록
+      ImageCarousel,
     ],
     content,
     immediatelyRender: false,
@@ -224,53 +228,19 @@ export function AdvancedEditor({
     }),
   })
 
-  // 이미지 업로드 함수
+  // 이미지 업로드 함수 (단일 이미지 삽입)
+  // 실제 Storage 업로드/폴백 로직은 공용 유틸(uploadArchiveImage)로 분리했다.
   const uploadImage = async (file: File) => {
     if (!editor) return
 
+    const toastId = toast.loading("이미지 업로드 중...")
     try {
-      // 로딩 표시
-      toast.loading("이미지 업로드 중...")
-
-      // 파일명 생성 (타임스탬프 + 원본 파일명)
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `archive-images/${fileName}`
-
-      // Supabase Storage에 업로드
-      const { data, error } = await supabase.storage
-        .from("thumbnails")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        })
-
-      if (error) {
-        throw error
-      }
-
-      // Public URL 가져오기
-      const { data: { publicUrl } } = supabase.storage
-        .from("thumbnails")
-        .getPublicUrl(filePath)
-
-      // 에디터에 이미지 삽입
-      editor.chain().focus().setImage({ src: publicUrl }).run()
-
-      toast.success("이미지가 업로드되었습니다!")
+      const url = await uploadArchiveImage(file)
+      editor.chain().focus().setImage({ src: url }).run()
+      toast.success("이미지가 업로드되었습니다!", { id: toastId })
     } catch (error) {
       console.error("이미지 업로드 실패:", error)
-      toast.error("이미지 업로드에 실패했습니다. Supabase Storage 설정을 확인하세요.")
-
-      // 실패 시 Base64로 폴백
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          editor.chain().focus().setImage({ src: e.target.result as string }).run()
-          toast.info("이미지를 로컬에서 표시합니다 (임시)")
-        }
-      }
-      reader.readAsDataURL(file)
+      toast.error("이미지 업로드에 실패했습니다.", { id: toastId })
     }
   }
 
@@ -283,6 +253,30 @@ export function AdvancedEditor({
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
         uploadImage(file)
+      }
+    }
+    input.click()
+  }
+
+  // 이미지 슬라이더(캐러셀) 삽입 핸들러 — 여러 이미지를 한 번에 선택
+  const handleCarouselInsert = () => {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.accept = "image/*"
+    input.multiple = true
+    input.onchange = async (e) => {
+      const files = Array.from((e.target as HTMLInputElement).files || [])
+      if (files.length === 0 || !editor) return
+
+      const toastId = toast.loading(`이미지 ${files.length}장 업로드 중...`)
+      try {
+        const urls = await Promise.all(files.map((f) => uploadArchiveImage(f)))
+        const images = urls.map((src, i) => ({ src, alt: files[i].name }))
+        editor.chain().focus().setImageCarousel(images).run()
+        toast.success(`슬라이더에 ${images.length}장 추가되었습니다!`, { id: toastId })
+      } catch (error) {
+        console.error("슬라이더 이미지 업로드 실패:", error)
+        toast.error("이미지 업로드에 실패했습니다.", { id: toastId })
       }
     }
     input.click()
@@ -446,6 +440,16 @@ export function AdvancedEditor({
           title="이미지 업로드"
         >
           <ImageIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleCarouselInsert}
+          className="h-9 w-9 p-0"
+          title="이미지 슬라이더 (여러 장을 옆으로 넘겨보기)"
+        >
+          <GalleryHorizontal className="h-4 w-4" />
         </Button>
         <Button
           type="button"

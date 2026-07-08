@@ -190,3 +190,134 @@ html {
   overflow: visible !important;
   border-radius: 0 !important;
 }
+
+/* ============================================================
+   이미지 슬라이더 / 캐러셀 (뷰어 — embla 기반 React 컴포넌트)
+   - 본문에 걸린 [&_img]:w-full, [&_div]:overflow-hidden 을 명시적으로 이겨야 한다.
+   ============================================================ */
+
+/* 폴백: 파싱 실패로 원본 .image-carousel div가 그대로 남는 경우 최소한 가로 스크롤 */
+.archive-content .image-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  margin: 2rem 0 !important;
+  border-radius: 0 !important;
+}
+.archive-content .image-carousel img {
+  flex: 0 0 auto;
+  width: auto !important;
+  height: clamp(200px, 42vw, 380px);
+  border-radius: 12px;
+  margin: 0 !important;
+}
+
+/* embla 뷰어 래퍼 */
+.archive-content .image-carousel-viewer {
+  position: relative;
+  margin: 2rem 0 !important;
+}
+
+/* embla viewport (넘치는 영역을 감춤) */
+.archive-content .image-carousel-viewer .ic-viewport {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* embla container (가로로 슬라이드를 늘어놓는 flex 트랙) */
+.archive-content .image-carousel-viewer .ic-container {
+  display: flex;
+  gap: 12px;
+  overflow: visible !important; /* [&_div]:overflow-hidden 무력화 */
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* 각 슬라이드 */
+.archive-content .image-carousel-viewer .ic-slide {
+  flex: 0 0 auto;
+  min-width: 0;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+/* 슬라이드 이미지: 높이 고정 + 폭 자동(원본 비율 유지) */
+.archive-content .image-carousel-viewer .ic-slide img {
+  display: block;
+  width: auto !important; /* [&_img]:w-full 무력화 */
+  height: clamp(200px, 42vw, 380px);
+  max-width: none;
+  object-fit: cover;
+  border-radius: 12px;
+  cursor: zoom-in;
+  margin: 0 !important;
+  background: #f3f4f6;
+}
+
+/* 좌우 화살표 버튼 */
+.archive-content .image-carousel-viewer .ic-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111827;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.archive-content .image-carousel-viewer .ic-arrow:hover {
+  background: #ffffff;
+}
+.archive-content .image-carousel-viewer .ic-arrow.prev {
+  left: 10px;
+}
+.archive-content .image-carousel-viewer .ic-arrow.next {
+  right: 10px;
+}
+.archive-content .image-carousel-viewer .ic-arrow:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 하단 dot 인디케이터 */
+.archive-content .image-carousel-viewer .ic-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+.archive-content .image-carousel-viewer .ic-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #d1d5db;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.archive-content .image-carousel-viewer .ic-dot.active {
+  background: #111827;
+  transform: scale(1.25);
+}
+
+/* 모바일: 화살표 조금 작게 */
+@media (max-width: 640px) {
+  .archive-content .image-carousel-viewer .ic-arrow {
+    width: 34px;
+    height: 34px;
+    font-size: 20px;
+  }
+}
