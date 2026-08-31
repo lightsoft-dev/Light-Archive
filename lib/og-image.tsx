@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og"
 import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import type { BaseArchive } from "@/types/archive"
+import { SITE_HOST } from "@/lib/site"
 
 export const OG_SIZE = { width: 1200, height: 630 }
 
@@ -136,7 +137,7 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
         >
           <div style={{ display: "flex", height: 1, backgroundColor: "#e5e5e5" }} />
           <div style={{ display: "flex", fontSize: 20, color: "#999" }}>
-            archive.lightsoft.dev
+            {SITE_HOST}
           </div>
         </div>
       </div>

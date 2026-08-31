@@ -1,3 +1,5 @@
+import { SITE_URL } from "@/lib/site"
+
 /**
  * 구조화된 데이터 (JSON-LD) 컴포넌트
  * SEO를 위한 Schema.org 마크업
@@ -16,21 +18,21 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "Light Archive",
-          url: "https://light-archive.vercel.app",
+          url: SITE_URL,
           description: "Lightsoft의 기술 문서와 프로젝트 아카이브",
           publisher: {
             "@type": "Organization",
             name: "Lightsoft",
             logo: {
               "@type": "ImageObject",
-              url: "https://light-archive.vercel.app/logo.png",
+              url: `${SITE_URL}/logo.png`,
             },
           },
           potentialAction: {
             "@type": "SearchAction",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: "https://light-archive.vercel.app/search?q={search_term_string}",
+              urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
             },
             "query-input": "required name=search_term_string",
           },
@@ -41,8 +43,8 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "Lightsoft",
-          url: "https://light-archive.vercel.app",
-          logo: "https://light-archive.vercel.app/logo.png",
+          url: SITE_URL,
+          logo: `${SITE_URL}/logo.png`,
           description: "기술과 프로젝트를 기록하고 공유하는 개발 팀",
           sameAs: [
             // 소셜 미디어 링크 추가 가능
@@ -67,7 +69,7 @@ export function StructuredData({ type, data }: StructuredDataProps) {
             name: "Lightsoft",
             logo: {
               "@type": "ImageObject",
-              url: "https://light-archive.vercel.app/logo.png",
+              url: `${SITE_URL}/logo.png`,
             },
           },
         }

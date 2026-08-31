@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { StructuredData } from "@/components/structured-data"
 import { DevTools } from "@/components/dev-tools"
+import { SITE_URL } from "@/lib/site"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: "https://light-archive.vercel.app",
+    url: SITE_URL,
     siteName: "Light Archive",
     title: "Light Archive - 기술과 프로젝트의 기록",
     description: "Lightsoft의 기술 문서와 프로젝트 아카이브. AI, 웹 개발, 사내 시스템 등 다양한 기술 경험과 인사이트를 공유합니다.",
@@ -81,7 +82,7 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-  metadataBase: new URL("https://light-archive.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: "/",
   },
