@@ -1,35 +1,41 @@
 "use client"
 
+/**
+ * 에이전트 스킬 카탈로그 목록 (/skills)
+ *
+ * 기존의 기술 아카이브는 /tech 로 이동했다. 이 경로는 설치 가능한 스킬만 다룬다.
+ */
+
 import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
-import { getSkills } from "@/lib/supabase-archive"
-import { getCommentCounts } from "@/lib/supabase-comments"
-import { getArchiveThumbnail } from "@/lib/utils"
-import type { Archive } from "@/types/archive"
-import { BlogSection, type BlogItem } from "@/components/ui/blog-section"
+import { SkillCard } from "@/components/skill-card"
+import { getSkillCatalog } from "@/lib/supabase-skills"
+import type { SkillCatalogItem } from "@/types/skill"
 
-function SkillsContent({ searchQuery }: { searchQuery: string }) {
+type VisibilityFilter = "all" | "public" | "internal"
+
+const FILTER_LABELS: Record<VisibilityFilter, string> = {
+  all: "전체",
+  public: "공개",
+  internal: "사내 전용",
+}
+
+function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
   const searchParams = useSearchParams()
-  const category = searchParams.get("category") || "all"
+  const filter = (searchParams.get("visibility") || "all") as VisibilityFilter
 
-  // Supabase에서 데이터 가져오기
-  const [skills, setSkills] = useState<Archive[]>([])
-  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
+  const [skills, setSkills] = useState<SkillCatalogItem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchSkills() {
       try {
-        const data = await getSkills()
-        setSkills(data)
-        // 댓글 수 일괄 조회
-        const ids = data.map((s) => s.id)
-        const counts = await getCommentCounts(ids)
-        setCommentCounts(counts)
+        setSkills(await getSkillCatalog())
       } catch (error) {
-        console.error("Failed to fetch skills:", error)
+        console.error("Failed to fetch skill catalog:", error)
       } finally {
         setLoading(false)
       }
@@ -37,83 +43,76 @@ function SkillsContent({ searchQuery }: { searchQuery: string }) {
     fetchSkills()
   }, [])
 
-  // 카테고리별 필터링
-  const filteredSkills = useMemo(() => {
-    if (category === "all") return skills
+  const visibleSkills = useMemo(() => {
+    const byVisibility =
+      filter === "all"
+        ? skills
+        : skills.filter((skill) => (skill.skill_meta?.visibility ?? "public") === filter)
 
-    // 카테고리 매핑
-    const categoryMap: Record<string, string> = {
-      "cloud-code": "클로드 코드",
-      "ai": "인공지능 활용",
-    }
+    if (!searchQuery.trim()) return byVisibility
 
-    const targetCategory = categoryMap[category]
-    if (!targetCategory) return skills
-
-    return skills.filter((skill) => skill.sub_category === targetCategory)
-  }, [skills, category])
-
-  // 검색 필터링
-  const searchedSkills = useMemo(() => {
-    if (!searchQuery.trim()) return filteredSkills
     const q = searchQuery.toLowerCase()
-    return filteredSkills.filter((skill) => {
-      const text = [
-        skill.title,
-        skill.description || "",
-        ...(skill.tags || []),
-      ].join(" ").toLowerCase()
-      return text.includes(q)
-    })
-  }, [filteredSkills, searchQuery])
-
-  // 스킬 데이터를 BlogItem 형식으로 변환
-  const blogItems: BlogItem[] = searchedSkills.map((skill) => ({
-    id: skill.id,
-    title: skill.title,
-    slug: `/skills/${skill.id}`,
-    description: skill.description || "",
-    image: getArchiveThumbnail(skill),
-    createdAt: skill.date || "",
-    author: skill.author || "팀",
-    readTime: skill.difficulty || "5분 읽기",
-    viewCount: skill.view_count,
-    commentCount: commentCounts[skill.id] || 0,
-  }))
+    return byVisibility.filter((skill) =>
+      [skill.title, skill.description, skill.slug, ...(skill.tags || [])]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [skills, filter, searchQuery])
 
   if (loading) {
-    return <div className="container mx-auto max-w-5xl px-6 py-12">로딩 중...</div>
-  }
-
-  const categoryLabels: Record<string, string> = {
-    all: "전체",
-    "cloud-code": "클로드 코드",
-    "ai": "인공지능 활용",
+    return <div className="mx-auto max-w-5xl px-6 py-12 text-gray-500">로딩 중...</div>
   }
 
   return (
-    <div className="w-full mx-auto max-w-5xl py-12">
-      <BlogSection
-        title="기술"
-        description="기술 문서와 가이드를 확인하세요"
-        blogs={blogItems}
-        categoryLabels={categoryLabels}
-        currentCategory={category}
-        basePath="/skills"
-      />
+    <div className="mx-auto w-full max-w-5xl px-6 py-12">
+      <header className="mb-10">
+        <h1 className="text-4xl font-normal text-black">스킬</h1>
+        <p className="mt-3 text-lg text-gray-600">
+          팀이 만든 에이전트 스킬입니다. 명령 하나로 설치해서 바로 쓰세요.
+        </p>
+      </header>
+
+      <nav className="mb-8 flex gap-2">
+        {(Object.keys(FILTER_LABELS) as VisibilityFilter[]).map((key) => (
+          <Link
+            key={key}
+            href={key === "all" ? "/skills" : `/skills?visibility=${key}`}
+            className={
+              filter === key
+                ? "rounded-full bg-black px-4 py-2 text-sm font-medium text-white"
+                : "rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:border-black hover:text-black"
+            }
+          >
+            {FILTER_LABELS[key]}
+          </Link>
+        ))}
+      </nav>
+
+      {visibleSkills.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-gray-200 py-16 text-center text-gray-400">
+          {searchQuery.trim() ? "검색 결과가 없습니다." : "아직 등록된 스킬이 없습니다."}
+        </p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {visibleSkills.map((skill) => (
+            <SkillCard key={skill.id} skill={skill} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
 export default function SkillsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     if (window.innerWidth >= 1024) {
       setSidebarOpen(true)
     }
   }, [])
-  const [searchQuery, setSearchQuery] = useState("")
 
   return (
     <div className="flex min-h-screen bg-white overflow-hidden">
@@ -125,21 +124,19 @@ export default function SkillsPage() {
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <div className="flex-1 min-w-0 flex flex-col transition-all duration-300">
+      <div className="flex min-w-0 flex-1 flex-col transition-all duration-300">
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} onSearchChange={setSearchQuery} />
-
         <main className="flex-1">
-          <Suspense fallback={<div className="container mx-auto max-w-5xl px-6 py-12">로딩 중...</div>}>
-            <SkillsContent searchQuery={searchQuery} />
+          <Suspense fallback={<div className="mx-auto max-w-5xl px-6 py-12 text-gray-500">로딩 중...</div>}>
+            <SkillsCatalog searchQuery={searchQuery} />
           </Suspense>
         </main>
       </div>
     </div>
   )
 }
-

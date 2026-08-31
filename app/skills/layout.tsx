@@ -1,38 +1,34 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "기술",
-  description: "Lightsoft 팀의 기술 문서와 가이드. 클로드 코드, AI 활용, React, Next.js 등 실무에서 사용하는 기술 스택과 노하우를 공유합니다.",
+  title: "스킬",
+  description:
+    "Lightsoft 팀이 만든 에이전트 스킬 카탈로그. Claude Code·Codex에서 바로 설치해 쓰는 반복 작업 자동화 스킬을 모았습니다.",
   keywords: [
-    "기술 문서",
-    "개발 가이드",
-    "클로드 코드",
+    "에이전트 스킬",
+    "agent skills",
     "Claude Code",
-    "AI 활용",
-    "React 튜토리얼",
-    "Next.js 가이드",
-    "TypeScript",
-    "개발 팁",
+    "Codex",
+    "skills.sh",
+    "npx skills add",
+    "개발 자동화",
+    "AI 에이전트",
   ],
   openGraph: {
-    title: "기술 | Light Archive",
-    description: "Lightsoft 팀의 기술 문서와 가이드",
+    title: "스킬 | Light Archive",
+    description: "Claude Code·Codex에서 바로 설치해 쓰는 에이전트 스킬 카탈로그",
     url: "/skills",
     type: "website",
   },
   twitter: {
-    title: "기술 | Light Archive",
-    description: "Lightsoft 팀의 기술 문서와 가이드",
+    title: "스킬 | Light Archive",
+    description: "Claude Code·Codex에서 바로 설치해 쓰는 에이전트 스킬 카탈로그",
   },
   alternates: {
     canonical: "/skills",
   },
 }
 
-export default function SkillsLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function SkillsLayout({ children }: { children: React.ReactNode }) {
   return children
 }
