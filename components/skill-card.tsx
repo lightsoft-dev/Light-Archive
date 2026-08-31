@@ -9,7 +9,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Check, Copy, Lock } from "lucide-react"
+import { Check, Copy, Download, Lock } from "lucide-react"
 import type { SkillCatalogItem } from "@/types/skill"
 
 export function SkillCard({ skill }: { skill: SkillCatalogItem }) {
@@ -84,9 +84,15 @@ export function SkillCard({ skill }: { skill: SkillCatalogItem }) {
               </span>
             ))}
           </div>
-          {typeof skill.view_count === "number" && (
-            <span className="shrink-0 text-xs text-gray-400">조회 {skill.view_count}</span>
-          )}
+          <div className="flex shrink-0 items-center gap-3 text-xs text-gray-400">
+            {typeof skill.installs === "number" && (
+              <span className="flex items-center gap-1 font-medium text-gray-600">
+                <Download className="h-3 w-3" />
+                {skill.installs.toLocaleString()}
+              </span>
+            )}
+            {typeof skill.view_count === "number" && <span>조회 {skill.view_count}</span>}
+          </div>
         </div>
       </div>
     </Link>

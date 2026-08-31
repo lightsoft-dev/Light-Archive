@@ -37,6 +37,8 @@ export interface SkillCatalogItem {
   sections?: SkillSection[] | null
   skill_meta?: SkillMeta | null
   view_count?: number
+  /** skills.sh 설치수. 사내 전용이거나 아직 색인 전이면 null */
+  installs?: number | null
   comment_count?: number
   thumbnail_url?: string
   created_at?: string

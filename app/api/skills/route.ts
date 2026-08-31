@@ -16,6 +16,7 @@ import { ZodError } from "zod"
 import { formatZodIssues, skillPublishSchema } from "@/lib/skill-publish-schema"
 import { getWriteClient } from "@/lib/supabase-server"
 import { getSkillCatalog } from "@/lib/supabase-skills"
+import { fetchInstallCounts } from "@/lib/skills-sh"
 import { ADMIN_COOKIE, verifySessionToken } from "@/lib/admin-session"
 import { SKILL_CATEGORY } from "@/types/skill"
 
@@ -65,7 +66,25 @@ export async function GET() {
     const isLoggedIn = verifySessionToken(cookieStore.get(ADMIN_COOKIE)?.value)
 
     const skills = await getSkillCatalog(isLoggedIn)
-    return NextResponse.json({ ok: true, count: skills.length, skills, viewerLoggedIn: isLoggedIn })
+
+    // 사내 전용 스킬은 skills.sh 에 없으므로 조회하지 않는다.
+    // 조회 실패는 null 로 남고 목록은 그대로 뜬다 — 설치수 때문에 카탈로그가 막히면 안 된다.
+    const lookups = skills
+      .filter((s) => s.skill_meta?.visibility !== "internal" && s.skill_meta?.repo)
+      .map((s) => ({ repo: s.skill_meta!.repo!, skillName: s.slug }))
+    const counts = await fetchInstallCounts(lookups)
+
+    const withInstalls = skills.map((s) => ({
+      ...s,
+      installs: s.skill_meta?.repo ? counts.get(`${s.skill_meta.repo}@${s.slug}`) ?? null : null,
+    }))
+
+    return NextResponse.json({
+      ok: true,
+      count: withInstalls.length,
+      skills: withInstalls,
+      viewerLoggedIn: isLoggedIn,
+    })
   } catch (error) {
     console.error("[GET /api/skills]", error)
     return NextResponse.json({ ok: false, error: "목록을 불러오지 못했습니다" }, { status: 500 })

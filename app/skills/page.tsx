@@ -15,6 +15,12 @@ import { SkillCard } from "@/components/skill-card"
 import type { SkillCatalogItem } from "@/types/skill"
 
 type VisibilityFilter = "all" | "public" | "internal"
+type SortKey = "recent" | "installs"
+
+const SORT_LABELS: Record<SortKey, string> = {
+  recent: "최신순",
+  installs: "설치 많은 순",
+}
 
 const FILTER_LABELS: Record<VisibilityFilter, string> = {
   all: "전체",
@@ -25,6 +31,7 @@ const FILTER_LABELS: Record<VisibilityFilter, string> = {
 function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
   const searchParams = useSearchParams()
   const filter = (searchParams.get("visibility") || "all") as VisibilityFilter
+  const sort = (searchParams.get("sort") || "recent") as SortKey
 
   const [skills, setSkills] = useState<SkillCatalogItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,16 +61,25 @@ function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
         ? skills
         : skills.filter((skill) => (skill.skill_meta?.visibility ?? "public") === filter)
 
-    if (!searchQuery.trim()) return byVisibility
+    const searched = !searchQuery.trim()
+      ? byVisibility
+      : byVisibility.filter((skill) =>
+          [skill.title, skill.description, skill.slug, ...(skill.tags || [])]
+            .join(" ")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
 
-    const q = searchQuery.toLowerCase()
-    return byVisibility.filter((skill) =>
-      [skill.title, skill.description, skill.slug, ...(skill.tags || [])]
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    )
-  }, [skills, filter, searchQuery])
+    if (sort !== "installs") return searched
+
+    // 설치수를 모르는 스킬(사내 전용·아직 색인 전)은 뒤로 보낸다.
+    // 0 으로 취급하면 "설치 0회"와 "모름"이 섞여서 순위가 거짓말이 된다.
+    return [...searched].sort((a, b) => {
+      const av = a.installs ?? -1
+      const bv = b.installs ?? -1
+      return bv - av
+    })
+  }, [skills, filter, searchQuery, sort])
 
   if (loading) {
     return <div className="mx-auto max-w-5xl px-6 py-12 text-gray-500">로딩 중...</div>
@@ -78,14 +94,20 @@ function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
         </p>
       </header>
 
-      <nav className="mb-8 flex gap-2">
+      <nav className="mb-8 flex flex-wrap items-center gap-2">
         {(Object.keys(FILTER_LABELS) as VisibilityFilter[])
           // 로그인하지 않았으면 사내 전용은 결과가 항상 0건이라 탭 자체를 숨긴다
           .filter((key) => key !== "internal" || viewerLoggedIn)
           .map((key) => (
           <Link
             key={key}
-            href={key === "all" ? "/skills" : `/skills?visibility=${key}`}
+            href={(() => {
+              const p = new URLSearchParams()
+              if (key !== "all") p.set("visibility", key)
+              if (sort !== "recent") p.set("sort", sort)
+              const q = p.toString()
+              return q ? `/skills?${q}` : "/skills"
+            })()}
             className={
               filter === key
                 ? "rounded-full bg-black px-4 py-2 text-sm font-medium text-white"
@@ -95,6 +117,28 @@ function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
             {FILTER_LABELS[key]}
           </Link>
         ))}
+
+        <span className="mx-1 h-4 w-px bg-gray-200" aria-hidden />
+
+        {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => {
+          const params = new URLSearchParams()
+          if (filter !== "all") params.set("visibility", filter)
+          if (key !== "recent") params.set("sort", key)
+          const query = params.toString()
+          return (
+            <Link
+              key={key}
+              href={query ? `/skills?${query}` : "/skills"}
+              className={
+                sort === key
+                  ? "rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-black"
+                  : "rounded-full px-4 py-2 text-sm text-gray-500 transition-colors hover:text-black"
+              }
+            >
+              {SORT_LABELS[key]}
+            </Link>
+          )
+        })}
       </nav>
 
       {visibleSkills.length === 0 ? (

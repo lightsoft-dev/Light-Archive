@@ -221,6 +221,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 `scope` `metrics` `faq` `code` `related`). 에이전트가 스킬 성격에 맞게 골라 조합한다.
 성격별 권장 조합은 `SECTION_PRESETS`(`lib/skill-sections.ts`)에 있다.
 
+### skills.sh 설치수 (2026-08-31)
+
+공개 스킬이 실제로 얼마나 쓰이는지를 카탈로그로 끌어와 "설치 많은 순" 정렬을 제공한다.
+
+- `lib/skills-sh.ts` — 조회. 공개 API 가 문서화돼 있지 않아 **검색 엔드포인트**를 쓴다(실측):
+  `GET https://www.skills.sh/api/search?q=<name>` → `{ skills: [{ name, source, installs }] }`.
+  `source` 가 `owner/repo` 라서 그것으로 우리 스킬을 골라낸다.
+- **실패하면 조용히 `null`** — 외부 비공식 경로다. 설치수 때문에 목록이 안 뜨면 본말전도다.
+  타임아웃 5초, `revalidate` 1시간 캐시.
+- 사내 전용은 skills.sh 에 없으므로 조회하지 않는다.
+- 정렬에서 **설치수를 모르는 스킬은 뒤로** 보낸다(`?? -1`). 0 으로 취급하면
+  "설치 0회"와 "모름"이 섞여 순위가 거짓말이 된다.
+
+공개 직후에는 색인이 안 돼 있어 `null` 이 정상이다 — 시간이 지나면 채워진다.
+
 ### 사내 전용 스킬 (2026-08-31)
 
 `skill_meta.visibility = "internal"` 은 **라벨이 아니라 실제 접근 제어**다. 두 겹으로 막는다.
