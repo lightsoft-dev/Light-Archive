@@ -5,7 +5,9 @@
  * draft 는 preview 토큰이 맞을 때만 돌려준다.
  */
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { getSkillBySlug } from "@/lib/supabase-skills"
+import { ADMIN_COOKIE, verifySessionToken } from "@/lib/admin-session"
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -17,7 +19,10 @@ export async function GET(request: Request, { params }: Props) {
   const expected = process.env.SKILL_PREVIEW_TOKEN
   const includeDraft = Boolean(expected && preview && preview === expected)
 
-  const skill = await getSkillBySlug(slug, includeDraft)
+  const cookieStore = await cookies()
+  const isLoggedIn = verifySessionToken(cookieStore.get(ADMIN_COOKIE)?.value)
+
+  const skill = await getSkillBySlug(slug, { includeDraft, includeInternal: isLoggedIn })
 
   if (!skill) {
     return NextResponse.json({ ok: false, error: `'${slug}' 스킬을 찾을 수 없습니다` }, { status: 404 })

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { cookies } from "next/headers"
 import { notFound, permanentRedirect } from "next/navigation"
 import { ArrowUpRight, Github, Lock } from "lucide-react"
 
@@ -8,6 +9,7 @@ import { CommentSection } from "@/components/comment-section"
 import { SkillSectionRenderer } from "@/components/skill-sections"
 import { SkillViewCounter } from "@/components/skill-view-counter"
 import { getSkillBySlug, isLegacyArchiveId } from "@/lib/supabase-skills"
+import { ADMIN_COOKIE, verifySessionToken } from "@/lib/admin-session"
 import type { SkillSection } from "@/lib/skill-sections"
 
 interface Props {
@@ -27,6 +29,7 @@ function canPreview(token: string | string[] | undefined): boolean {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
+  // 메타데이터는 공개 정보만 — 사내 전용이면 여기서 null 이 돌아온다
   const skill = await getSkillBySlug(slug)
 
   if (!skill) {
@@ -49,7 +52,15 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
   const { slug } = await params
   const { preview } = await searchParams
 
-  const skill = await getSkillBySlug(slug, canPreview(preview))
+  // 사내 전용 스킬은 로그인한 사람에게만 보인다. 자격이 없으면 404 —
+  // 403 을 주면 그 이름의 스킬이 존재한다는 사실이 새어 나간다.
+  const cookieStore = await cookies()
+  const isLoggedIn = verifySessionToken(cookieStore.get(ADMIN_COOKIE)?.value)
+
+  const skill = await getSkillBySlug(slug, {
+    includeDraft: canPreview(preview),
+    includeInternal: isLoggedIn,
+  })
 
   if (!skill) {
     // 기존 /skills/{id}(기술 아카이브) 링크는 /tech/{id} 로 넘긴다.

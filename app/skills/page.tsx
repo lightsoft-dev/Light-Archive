@@ -12,7 +12,6 @@ import Link from "next/link"
 import { Sidebar } from "@/components/sidebar"
 import { TopNav } from "@/components/top-nav"
 import { SkillCard } from "@/components/skill-card"
-import { getSkillCatalog } from "@/lib/supabase-skills"
 import type { SkillCatalogItem } from "@/types/skill"
 
 type VisibilityFilter = "all" | "public" | "internal"
@@ -29,11 +28,17 @@ function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
 
   const [skills, setSkills] = useState<SkillCatalogItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [viewerLoggedIn, setViewerLoggedIn] = useState(false)
 
   useEffect(() => {
     async function fetchSkills() {
       try {
-        setSkills(await getSkillCatalog())
+        // 서버가 세션을 보고 사내 전용 포함 여부를 정한다.
+        // 브라우저가 Supabase 를 직접 부르면 그 판정을 우회하게 되므로 API 를 거친다.
+        const res = await fetch("/api/skills", { credentials: "same-origin" })
+        const body = await res.json()
+        setSkills(body.skills || [])
+        setViewerLoggedIn(Boolean(body.viewerLoggedIn))
       } catch (error) {
         console.error("Failed to fetch skill catalog:", error)
       } finally {
@@ -74,7 +79,10 @@ function SkillsCatalog({ searchQuery }: { searchQuery: string }) {
       </header>
 
       <nav className="mb-8 flex gap-2">
-        {(Object.keys(FILTER_LABELS) as VisibilityFilter[]).map((key) => (
+        {(Object.keys(FILTER_LABELS) as VisibilityFilter[])
+          // 로그인하지 않았으면 사내 전용은 결과가 항상 0건이라 탭 자체를 숨긴다
+          .filter((key) => key !== "internal" || viewerLoggedIn)
+          .map((key) => (
           <Link
             key={key}
             href={key === "all" ? "/skills" : `/skills?visibility=${key}`}

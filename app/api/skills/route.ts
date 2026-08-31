@@ -10,14 +10,14 @@
  */
 
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { ZodError } from "zod"
 
 import { formatZodIssues, skillPublishSchema } from "@/lib/skill-publish-schema"
 import { getWriteClient } from "@/lib/supabase-server"
+import { getSkillCatalog } from "@/lib/supabase-skills"
+import { ADMIN_COOKIE, verifySessionToken } from "@/lib/admin-session"
 import { SKILL_CATEGORY } from "@/types/skill"
-
-const SKILL_COLUMNS =
-  "id, slug, title, description, status, author, tags, sections, skill_meta, view_count, created_at, updated_at, published_at"
 
 // ---------------------------------------------------------------------------
 // 인프라
@@ -59,17 +59,13 @@ function generateArchiveId(): string {
 
 export async function GET() {
   try {
-    const supabase = getWriteClient()
-    const { data, error } = await supabase
-      .from("archive_items")
-      .select(SKILL_COLUMNS)
-      .eq("category", SKILL_CATEGORY)
-      .eq("status", "published")
-      .order("created_at", { ascending: false })
+    // 사내 전용 스킬은 로그인한 사람에게만 내려준다.
+    // 판정을 서버에서 하는 이유 — 브라우저가 직접 조회하면 그 필터를 우회할 수 있다.
+    const cookieStore = await cookies()
+    const isLoggedIn = verifySessionToken(cookieStore.get(ADMIN_COOKIE)?.value)
 
-    if (error) throw error
-
-    return NextResponse.json({ ok: true, count: data?.length ?? 0, skills: data ?? [] })
+    const skills = await getSkillCatalog(isLoggedIn)
+    return NextResponse.json({ ok: true, count: skills.length, skills, viewerLoggedIn: isLoggedIn })
   } catch (error) {
     console.error("[GET /api/skills]", error)
     return NextResponse.json({ ok: false, error: "목록을 불러오지 못했습니다" }, { status: 500 })
