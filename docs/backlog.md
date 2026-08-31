@@ -61,6 +61,24 @@
 2. **실수의 폭발 반경** — Light Archive 마이그레이션을 잘못 돌리면 ERP를 건드린다.
    이번 작업에서도 `DROP CONSTRAINT`를 칠 때 대상 테이블을 두 번 확인해야 했다.
 
+### 2026-08-31 추가 실측 — 노출된 키의 사용 범위
+
+오늘 작업 대화에 평문으로 오간 `service_role` 키를 1Password 볼트의
+**`라이트소프트 ERP - Supabase service_role key`** 와 대조했더니 **동일한 키**였다
+(sha256 앞 8자리 일치, 219자).
+
+즉 로테이션 범위가 Light Archive 하나가 아니다.
+
+| 갱신해야 할 곳 | 무엇 |
+|---|---|
+| Vercel `light-archive` | `SUPABASE_SERVICE_ROLE_KEY` |
+| ERP 쪽 배포 환경 | 같은 키를 쓰는 모든 곳 |
+| 1Password `Shared` | `라이트소프트 ERP - Supabase service_role key` 항목 값 |
+
+한 곳만 바꾸면 나머지가 죽는다. **로테이션은 세 곳을 동시에 처리해야 한다.**
+이것 자체가 프로젝트 분리를 앞당길 이유다 — 분리하면 두 시스템의 키가 독립적이라
+한쪽 노출이 다른 쪽 로테이션을 강제하지 않는다.
+
 **대응** — Light Archive용 Supabase 프로젝트를 새로 파고 `archive_items`·
 `archive_comments`·`thumbnails` 버킷을 옮긴다. 데이터가 27행·댓글 소량이라 이전 자체는 가볍다.
 비용(Supabase 무료 프로젝트 한도)과 마이그레이션 시점 조율이 실제 관문이다.
