@@ -45,6 +45,9 @@ pnpm add -D <package-name>
 ```
 /app                    # Next.js App Router 페이지
   /admin                # 관리자 페이지 (로그인, 포스트 관리)
+  /tech                 # 기술 아카이브 목록/상세 (구 /skills, category='기술')
+  /skills               # 에이전트 스킬 카탈로그 (category='스킬')
+  /api/skills           # 스킬 게시 API (POST 인증 필요)
   /projects/[id]        # 동적 프로젝트 상세 페이지
   /test                 # Supabase 연결 테스트 페이지 (빌드에서 제외됨)
   /_test                # 비활성화된 테스트 페이지
@@ -162,6 +165,127 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 - 테스트용 정책: 공개 읽기/쓰기/삭제
 - 프로덕션: 인증된 사용자만 접근 가능하도록 제한
 
+### 첨부파일 관리 (`lib/supabase-attachments.ts`)
+
+아카이브 첨부파일은 **별도 DB 테이블/컬럼 없이 Storage 폴더 구조로만 관리**한다.
+- 경로: `thumbnails/attachments/{archiveId}/{저장키}`
+- 표시용 파일 목록은 DB가 아니라 Storage `list()` 결과에서 온다 (`getAttachments()`).
+- 따라서 **Storage에 물리적으로 저장된 키가 곧 화면에 보이는 파일명**이다.
+
+**한글 파일명 처리 (중요):**
+- Supabase Storage는 한글/유니코드 키를 `InvalidKey`로 거부하고, macOS는 한글 파일명을 NFD(자모 분리형)로 전달한다.
+- 그래서 원본 파일명을 **Base64URL로 인코딩**해 키에 보존한다. 저장 키 형식: `{timestamp}-enc-{base64url(NFC 원본명)}`.
+- 조회 시 `enc-` 마커를 디코딩해 원본 한글명으로 복원한다 (마커 없는 구 파일은 타임스탬프만 제거하는 fallback — 단, 구 파일의 깨진 한글은 복구 불가).
+- 키에 확장자가 안 남으므로 업로드 시 `contentType`을 명시한다.
+- 상세 함정/실측 근거는 전역 룰 `~/.claude/rules/korean-filename-storage-key.md` 참고.
+
+## 에이전트 스킬 카탈로그 (/skills)
+
+`publish-agent-skill`로 배포한 스킬(또는 사내 전용 스킬)의 소개 페이지를 **에이전트가 API로 게시**한다.
+기획 정본은 `docs/skill-catalog-plan.md`.
+
+### 라우트
+
+| 경로 | 내용 |
+|---|---|
+| `/tech`, `/tech/[id]` | 기존 기술 아카이브 (`category='기술'`). **구 `/skills`에서 이동** |
+| `/skills` | 스킬 카탈로그 목록 (`category='스킬'`) |
+| `/skills/[slug]` | 스킬 상세. slug가 없으면 옛 아카이브 id인지 보고 `/tech/{id}`로 301 |
+
+### 데이터 모델
+
+신규 테이블 없이 `archive_items`를 확장했다 — 댓글·조회수·검색·OG가 이미 이 테이블에 묶여 있어서다.
+
+| 컬럼 | 용도 |
+|---|---|
+| `slug` | `/skills/{slug}` 라우팅 키이자 게시 API의 **upsert 키**. 영문으로 시작(옛 id와 구분) |
+| `sections` (JSONB) | 섹션 템플릿 본문. 있으면 섹션 렌더, 없으면 기존 `content` HTML 렌더 |
+| `skill_meta` (JSONB) | `{ visibility, repo, install, skillsShUrl, internalPath, harnesses }` |
+
+마이그레이션: `supabase/migrations/003_skill_catalog.sql`
+
+### 모듈 인덱스
+
+| 파일 | 역할 |
+|---|---|
+| `lib/skill-sections.ts` | **섹션 스키마 정본**(zod). 12종 타입 + 필수/카탈로그/프리셋. 서버 검증과 프론트 타입이 여기서 같이 나온다 |
+| `lib/skill-publish-schema.ts` | `POST /api/skills` 요청 스키마 + zod 에러 포매터 |
+| `lib/supabase-skills.ts` | 카탈로그 조회 (`getSkillCatalog`, `getSkillBySlug`, `isLegacyArchiveId`) |
+| `components/skill-sections.tsx` | 섹션 12종 렌더러 + 디스패처. 알 수 없는 type은 건너뛴다 |
+| `components/skill-card.tsx` | 목록 카드 (설치 명령 복사 포함) |
+| `components/catalog-shell.tsx` | Sidebar+TopNav 껍데기. 상세를 서버 컴포넌트로 유지하려고 분리 |
+
+### 섹션 템플릿
+
+필수 2개(`hero`, `install`) + 선택 10개(`problem` `before_after` `triggers` `steps` `demo`
+`scope` `metrics` `faq` `code` `related`). 에이전트가 스킬 성격에 맞게 골라 조합한다.
+성격별 권장 조합은 `SECTION_PRESETS`(`lib/skill-sections.ts`)에 있다.
+
+### 게시 API
+
+```bash
+curl -X POST https://archive.lightsoft.dev/api/skills \
+  -H "Authorization: Bearer $LIGHT_ARCHIVE_PUBLISH_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "slug": "...", "title": "...", "description": "...",
+        "visibility": "public", "status": "draft",
+        "source": { "install": "npx skills add owner/repo" },
+        "sections": [ { "type": "hero", "data": { "tagline": "..." } } ] }'
+```
+
+- **멱등** — 같은 slug면 새 글이 안 생기고 갱신된다(`action: "updated"`).
+- 기본 `status`는 `draft`. 응답의 `previewUrl`로 확인한 뒤 `published`로 다시 호출한다.
+- 검증 실패 시 400과 함께 `issues: [{path, message}]`로 어디가 틀렸는지 돌려준다.
+
+### 환경변수
+
+| 이름 | 용도 |
+|---|---|
+| `LIGHT_ARCHIVE_PUBLISH_TOKEN` | 게시 API Bearer 토큰. **없으면 POST가 전부 401** |
+| `SKILL_PREVIEW_TOKEN` | draft 미리보기 URL 토큰 |
+| `SUPABASE_SERVICE_ROLE_KEY` | (선택) 있으면 API 쓰기에 사용. RLS를 조인 뒤에는 필수 — `docs/backlog.md` 참조. **`NEXT_PUBLIC_` 금지** |
+| `ADMIN_PASSWORD` | 관리자 로그인 비밀번호. 없으면 로그인 자체가 불가 |
+| `ADMIN_SESSION_SECRET` | 세션 쿠키 서명 키 |
+| `NEXT_PUBLIC_SITE_URL` | (선택) 사이트 정본 URL. 기본 `https://archive.lightsoft.dev` (`lib/site.ts`) |
+
+## 관리자 인증과 쓰기 경로 (2026-08-31 변경)
+
+브라우저가 Supabase 를 직접 쓰던 것을 **전부 서버 API 경유로 옮겼다.**
+RLS 에서 익명 쓰기를 막아도 관리 화면이 계속 동작하게 하기 위한 선결 작업이다.
+
+### 인증
+
+| | 이전 | 지금 |
+|---|---|---|
+| 검증 위치 | 브라우저 (`email==="admin" && password==="1234"`) | 서버 (`POST /api/admin/session`) |
+| 세션 | `sessionStorage` 플래그 (조작 가능) | httpOnly 서명 쿠키 `la_admin` (HMAC-SHA256, 12시간) |
+
+- `lib/admin-session.ts` — 토큰 발급·검증. `ADMIN_PASSWORD`·`ADMIN_SESSION_SECRET` 필요
+- `lib/admin-api.ts` — 관리 화면이 쓰는 브라우저 클라이언트. 쿠키는 `credentials: "same-origin"`으로 자동 전송
+
+### 쓰기 API
+
+```
+POST   /api/admin/session       로그인      GET 상태 확인   DELETE 로그아웃
+GET    /api/admin/archives      목록 (draft 포함)
+POST   /api/admin/archives      생성
+GET    /api/admin/archives/{id} 단건 (draft 포함)
+PATCH  /api/admin/archives/{id} 수정
+DELETE /api/admin/archives/{id} 삭제
+```
+
+전부 `la_admin` 쿠키를 검사한다. `lib/supabase-server.ts`의 `getWriteClient()`가
+`SUPABASE_SERVICE_ROLE_KEY`(있으면) → anon(폴백) 순으로 붙는다.
+
+**`lib/supabase-archive.ts`의 `createArchive`·`updateArchive`·`deleteArchive` 는 더 이상
+화면에서 호출하지 않는다.** 새 관리 기능을 붙일 때 그걸 다시 부르면 RLS 를 조인 뒤 깨진다 —
+`lib/admin-api.ts` 를 쓴다.
+
+### 아직 남은 것
+
+RLS 는 아직 열려 있다(`supabase/migrations/005_lock_down_rls.sql` 미적용).
+`SUPABASE_SERVICE_ROLE_KEY` 가 있어야 적용할 수 있다 — `docs/backlog.md` 참조.
+
 ## Key Features & Implementation Notes
 
 ### 1. 유사 항목 추천 시스템
@@ -208,17 +332,22 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```javascript
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true,  // TypeScript 에러 무시 (개발 중)
+    ignoreBuildErrors: false,  // 2026-08-31 타입 안전망 복구
   },
   images: {
-    unoptimized: true,        // 이미지 최적화 비활성화
+    unoptimized: true,         // 이미지 최적화 비활성화
   },
 }
 ```
 
-**주의:**
-- `ignoreBuildErrors`는 개발 중 임시 설정입니다. 프로덕션 배포 전에 제거하세요.
-- `images.unoptimized`는 Vercel 배포 시 제거 가능 (Vercel Image Optimization 사용)
+**타입 검사는 켜져 있다 (2026-08-31 변경).** 이전에는 `ignoreBuildErrors: true` 였고
+`tsc --noEmit` 이 항상 exit 2 라서 안전망이 사실상 없었다. 원인이던 죽은 파일 2개를 지우고
+드러난 에러 26건을 고쳐서 지금은 `pnpm build` 가 타입 검사를 실제로 돌리고 통과한다.
+
+**다시 켜지 말 것** — 그때 가려져 있던 것 중 하나가 실제 버그였다
+(`archive-content.tsx` 가 존재하지 않는 `subCategory` 를 읽어 세부 분류가 표시되지 않았다).
+
+- `images.unoptimized` 는 Vercel 배포 시 제거 가능 (Vercel Image Optimization 사용)
 
 ### TypeScript Config
 
@@ -226,28 +355,14 @@ const nextConfig = {
 - **Strict Mode**: 활성화
 - **Target**: ES6
 - **JSX**: react-jsx
+- **exclude**: `node_modules`, `light-archive-mcp`, `light-archive-mcp-cf`, `.next`
+  (MCP 워커는 Cloudflare 타입을 쓰는 별도 프로젝트라 제외)
 
 ## Design System
 
-### 컬러 시스템
-- 주 색상: 검정 (#000000)
-- 배경: 흰색 (#FFFFFF)
-- 텍스트: 검정 (#000000), 회색 (#666666, #999999)
-- 강조: 투명도 및 블러 효과 활용
-
-### 타이포그래피
-- 폰트: Inter (Google Fonts)
-- 시스템 폰트 폴백
-- 코드: 모노스페이스 폰트
-
-### 반응형 브레이크포인트
-- 모바일: 0px - 768px (1열 그리드)
-- 태블릿: 768px - 1024px (2-3열 그리드)
-- 데스크톱: 1024px 이상 (4열 그리드)
-
-### 아이콘
-- Lucide React 사용
-- 크기: 16px, 20px, 24px
+- 디자인 시스템의 기준 문서는 루트의 `DESIGN.md`입니다.
+- `DESIGN.md`는 google-labs-code/design.md 형식을 따라 YAML 토큰과 적용 설명을 함께 관리합니다.
+- UI 작업 시 색상, 폰트, 간격, radius, 버튼/카드/배지 규칙은 `DESIGN.md`를 우선 확인하세요.
 
 ## Security Considerations
 
