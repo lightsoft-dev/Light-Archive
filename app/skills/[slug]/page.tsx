@@ -64,12 +64,16 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
   const isInternal = meta?.visibility === "internal"
   const sections = (skill.sections || []) as SkillSection[]
   const isDraft = skill.status !== "published"
+  // repoPath 가 있으면 저장소 루트가 아니라 스킬 폴더로 바로 보낸다
+  const repoUrl = meta?.repo
+    ? `https://github.com/${meta.repo}${meta.repoPath ? `/tree/main/${meta.repoPath}` : ""}`
+    : null
 
   return (
     <CatalogShell>
       <SkillViewCounter archiveId={skill.id} />
 
-      <article className="mx-auto max-w-3xl px-6 py-12 md:py-16">
+      <article className="mx-auto max-w-4xl px-6 md:px-8 py-12 md:py-16">
         {isDraft && (
           <p className="mb-8 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600">
             미리보기 — 아직 공개되지 않은 초안입니다.
@@ -111,13 +115,13 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
             <div className="mt-6 flex flex-wrap gap-2">
               {meta.repo && (
                 <a
-                  href={`https://github.com/${meta.repo}`}
+                  href={repoUrl!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                  className="github-shimmer inline-flex items-center gap-2.5 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
                 >
                   <Github className="h-4 w-4" />
-                  GitHub
+                  GitHub 저장소 보기
                 </a>
               )}
               {meta.skillsShUrl && (
@@ -125,7 +129,7 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
                   href={meta.skillsShUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-700 transition-colors hover:border-black hover:text-black"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-700 transition-colors hover:border-black hover:text-black"
                 >
                   skills.sh
                   <ArrowUpRight className="h-3.5 w-3.5" />

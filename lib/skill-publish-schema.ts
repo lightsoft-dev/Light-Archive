@@ -28,6 +28,8 @@ export const skillSourceSchema = z.object({
     .string()
     .regex(/^[\w.-]+\/[\w.-]+$/, "repo 는 owner/repo 형식이어야 합니다")
     .optional(),
+  /** repo 안에서 이 스킬이 있는 경로 — 저장소 루트가 아니라 스킬 폴더로 바로 보내려는 것 */
+  repoPath: z.string().trim().min(1).max(200).optional(),
   install: z.string().trim().min(1).optional(),
   skillsShUrl: z.string().url().optional(),
   internalPath: z.string().trim().min(1).optional(),
