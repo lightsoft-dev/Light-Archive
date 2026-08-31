@@ -42,21 +42,27 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-import { getAllArchivesAdmin, deleteArchive, updateArchive } from "@/lib/supabase-archive"
+import {
+  checkSession,
+  login as loginRequest,
+  fetchAdminArchives,
+  updateAdminArchive,
+  deleteAdminArchive,
+} from "@/lib/admin-api"
 import type { Archive } from "@/types/archive"
 import { toast } from "sonner"
+import { SITE_URL } from "@/lib/site"
 
 export default function AdminPage() {
   const router = useRouter()
-  // sessionStorage로 로그인 상태 유지 (페이지 이동해도 세션 동안 유지)
+  // 로그인 상태는 서버 세션 쿠키로 유지된다
   const [isLoggedIn, setIsLoggedIn] = React.useState(false)
   const [loginOpen, setLoginOpen] = React.useState(false)
 
-  // 마운트 후 sessionStorage에서 로그인 상태 복원 (hydration 에러 방지)
+  // 로그인 상태는 서버가 발급한 httpOnly 쿠키가 정본이다.
+  // sessionStorage 플래그는 브라우저에서 조작할 수 있어 더 이상 쓰지 않는다.
   React.useEffect(() => {
-    if (sessionStorage.getItem("admin_logged_in") === "true") {
-      setIsLoggedIn(true)
-    }
+    checkSession().then(setIsLoggedIn)
   }, [])
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -80,7 +86,7 @@ export default function AdminPage() {
   const fetchArchives = async () => {
     setLoading(true)
     try {
-      const data = await getAllArchivesAdmin()
+      const data = await fetchAdminArchives()
       setArchives(data)
     } catch (error) {
       console.error("Failed to fetch archives:", error)
@@ -90,19 +96,19 @@ export default function AdminPage() {
     }
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError("")
-    
-    // 이메일이 "admin"이고 비밀번호가 "1234"인지 확인
-    if (email === "admin" && password === "1234") {
+
+    // 비밀번호 검증은 서버가 한다. 브라우저 코드에는 비밀번호가 남지 않는다.
+    try {
+      await loginRequest(password)
       setIsLoggedIn(true)
-      sessionStorage.setItem("admin_logged_in", "true")
       setLoginOpen(false)
       setEmail("")
       setPassword("")
-    } else {
-      setLoginError("이메일 또는 비밀번호가 올바르지 않습니다.")
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : "로그인에 실패했습니다.")
     }
   }
 
@@ -117,34 +123,24 @@ export default function AdminPage() {
     }
 
     try {
-      const success = await deleteArchive(archiveId)
-
-      if (success) {
-        // 로컬 상태에서도 제거
-        setArchives(archives.filter((archive) => archive.id !== archiveId))
-        toast.success("아카이브가 삭제되었습니다")
-      } else {
-        toast.error("삭제에 실패했습니다")
-      }
+      await deleteAdminArchive(archiveId)
+      setArchives(archives.filter((archive) => archive.id !== archiveId))
+      toast.success("아카이브가 삭제되었습니다")
     } catch (error) {
       console.error("Delete failed:", error)
-      toast.error("삭제 중 오류가 발생했습니다")
+      toast.error(error instanceof Error ? error.message : "삭제 중 오류가 발생했습니다")
     }
   }
 
   const handleStatusChange = async (archiveId: string, newStatus: "draft" | "published" | "archived") => {
     try {
-      const result = await updateArchive(archiveId, { status: newStatus })
-      if (result) {
-        setArchives(archives.map((a) => a.id === archiveId ? { ...a, status: newStatus } : a))
-        const labels = { draft: "임시저장", published: "발행", archived: "보관" }
-        toast.success(`${labels[newStatus]}으로 변경되었습니다`)
-      } else {
-        toast.error("상태 변경에 실패했습니다")
-      }
+      await updateAdminArchive(archiveId, { status: newStatus })
+      setArchives(archives.map((a) => a.id === archiveId ? { ...a, status: newStatus } : a))
+      const labels = { draft: "임시저장", published: "발행", archived: "보관" }
+      toast.success(`${labels[newStatus]}으로 변경되었습니다`)
     } catch (error) {
       console.error("Status change failed:", error)
-      toast.error("상태 변경 중 오류가 발생했습니다")
+      toast.error(error instanceof Error ? error.message : "상태 변경 중 오류가 발생했습니다")
     }
   }
 
@@ -302,7 +298,7 @@ export default function AdminPage() {
               <DropdownMenuLabel>작업</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => {
                 const path = archive.category === "프로젝트" ? "projects" : "skills"
-                navigator.clipboard.writeText(`https://archive.lightsoft.dev/${path}/${archive.id}`)
+                navigator.clipboard.writeText(`${SITE_URL}/${path}/${archive.id}`)
               }}>링크 복사</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleEdit(archive)}>수정</DropdownMenuItem>

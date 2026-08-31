@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AdvancedEditor } from "@/components/admin/advanced-editor"
 import { TagInput } from "@/components/admin/tag-input"
 import { toast } from "sonner"
-import { createArchive } from "@/lib/supabase-archive"
+import { createAdminArchive } from "@/lib/admin-api"
 import { FileAttachment } from "@/components/admin/file-attachment"
 import type { Attachment } from "@/types/archive"
 import {
@@ -73,7 +73,7 @@ export default function NewPostPage() {
         status: asDraft ? "draft" as const : "published" as const,
       }
 
-      const result = await createArchive(archiveData)
+      const result = await createAdminArchive(archiveData)
 
       if (result) {
         toast.success(asDraft ? "임시저장되었습니다! 목록으로 이동합니다..." : "아카이브가 저장되었습니다! 목록으로 이동합니다...")

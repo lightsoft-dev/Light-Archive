@@ -34,7 +34,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, parse } from "date-fns"
 import { ko } from "date-fns/locale"
-import { getArchiveById, updateArchive, deleteArchive } from "@/lib/supabase-archive"
+import { fetchAdminArchive, updateAdminArchive, deleteAdminArchive } from "@/lib/admin-api"
 import { FileAttachment } from "@/components/admin/file-attachment"
 import { getAttachments, deleteAllAttachments } from "@/lib/supabase-attachments"
 import type { Archive, Attachment } from "@/types/archive"
@@ -74,7 +74,7 @@ export default function EditPostPage() {
       setLoading(true)
       try {
         // Supabase에서 데이터 가져오기
-        const archive = await getArchiveById(postId)
+        const archive = await fetchAdminArchive(postId)
 
         if (!archive) {
           toast.error("아카이브를 찾을 수 없습니다")
@@ -139,7 +139,7 @@ export default function EditPostPage() {
         status: targetStatus,
       }
 
-      const result = await updateArchive(postId, updates)
+      const result = await updateAdminArchive(postId, updates)
 
       if (result) {
         const message = targetStatus === "draft"
@@ -162,20 +162,16 @@ export default function EditPostPage() {
     try {
       // 첨부파일도 함께 삭제
       await deleteAllAttachments(postId)
-      // Supabase에서 삭제
-      const success = await deleteArchive(postId)
+      // 서버 API 경유로 삭제 (관리자 세션 쿠키 필요)
+      await deleteAdminArchive(postId)
 
-      if (success) {
-        toast.success("아카이브가 삭제되었습니다! 목록으로 이동합니다...")
-        setTimeout(() => {
-          router.push("/admin")
-        }, 1500)
-      } else {
-        toast.error("삭제에 실패했습니다")
-      }
+      toast.success("아카이브가 삭제되었습니다! 목록으로 이동합니다...")
+      setTimeout(() => {
+        router.push("/admin")
+      }, 1500)
     } catch (error) {
       console.error("삭제 실패:", error)
-      toast.error("삭제 중 오류가 발생했습니다")
+      toast.error(error instanceof Error ? error.message : "삭제 중 오류가 발생했습니다")
     }
   }
 
