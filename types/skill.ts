@@ -13,10 +13,8 @@ export type SkillVisibility = "public" | "internal"
 /** archive_items.skill_meta (JSONB) 의 형태 */
 export interface SkillMeta {
   visibility: SkillVisibility
-  /** owner/repo */
+  /** owner/repo — 그 스킬 전용 public 저장소 (publish-agent-skill 이 만든다) */
   repo?: string
-  /** repo 안에서 이 스킬이 있는 경로 (예: light-archive-publish) */
-  repoPath?: string
   /** 복사해서 바로 쓰는 설치 명령 */
   install?: string
   skillsShUrl?: string

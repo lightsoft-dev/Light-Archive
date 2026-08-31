@@ -147,7 +147,7 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
   }
 
   return (
-    <article className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
+    <article className="max-w-5xl mx-auto px-6 md:px-8 py-12 md:py-16">
       <FloatingToc />
       {/* Back Button & Share */}
       <div className="flex items-center justify-between mb-6">

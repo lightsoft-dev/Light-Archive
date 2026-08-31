@@ -37,7 +37,7 @@ export function ProjectContent({ id }: { id?: string }) {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
+      <div className="max-w-5xl mx-auto px-6 md:px-8 py-12 md:py-16">
         <p>로딩 중...</p>
       </div>
     )
@@ -45,7 +45,7 @@ export function ProjectContent({ id }: { id?: string }) {
 
   if (!project) {
     return (
-      <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
+      <div className="max-w-5xl mx-auto px-6 md:px-8 py-12 md:py-16">
         <p>프로젝트를 찾을 수 없습니다.</p>
       </div>
     )

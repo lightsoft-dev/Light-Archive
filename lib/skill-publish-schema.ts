@@ -23,13 +23,15 @@ export const skillSlugSchema = z
   )
 
 export const skillSourceSchema = z.object({
-  /** owner/repo */
+  /**
+   * owner/repo — **그 스킬 전용 public 저장소**여야 한다.
+   * 여러 스킬이 섞인 private 모노레포를 가리키면 안 된다(링크를 받은 사람이 열지 못한다).
+   * 전용 저장소는 publish-agent-skill 스킬이 만든다.
+   */
   repo: z
     .string()
     .regex(/^[\w.-]+\/[\w.-]+$/, "repo 는 owner/repo 형식이어야 합니다")
     .optional(),
-  /** repo 안에서 이 스킬이 있는 경로 — 저장소 루트가 아니라 스킬 폴더로 바로 보내려는 것 */
-  repoPath: z.string().trim().min(1).max(200).optional(),
   install: z.string().trim().min(1).optional(),
   skillsShUrl: z.string().url().optional(),
   internalPath: z.string().trim().min(1).optional(),

@@ -75,16 +75,14 @@ export default async function SkillDetailPage({ params, searchParams }: Props) {
   const isInternal = meta?.visibility === "internal"
   const sections = (skill.sections || []) as SkillSection[]
   const isDraft = skill.status !== "published"
-  // repoPath 가 있으면 저장소 루트가 아니라 스킬 폴더로 바로 보낸다
-  const repoUrl = meta?.repo
-    ? `https://github.com/${meta.repo}${meta.repoPath ? `/tree/main/${meta.repoPath}` : ""}`
-    : null
+  // repo 는 그 스킬 전용 public 저장소다 — 링크를 받은 사람이 바로 열 수 있어야 한다
+  const repoUrl = meta?.repo ? `https://github.com/${meta.repo}` : null
 
   return (
     <CatalogShell>
       <SkillViewCounter archiveId={skill.id} />
 
-      <article className="mx-auto max-w-4xl px-6 md:px-8 py-12 md:py-16">
+      <article className="mx-auto max-w-5xl px-6 md:px-8 py-12 md:py-16">
         {isDraft && (
           <p className="mb-8 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600">
             미리보기 — 아직 공개되지 않은 초안입니다.

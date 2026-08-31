@@ -27,7 +27,7 @@ export function ArticleContent({ selectedPost }: ArticleContentProps) {
   // 검색에서 선택된 포스트가 있으면 해당 포스트 내용 표시
   if (selectedPost) {
     return (
-      <article className="max-w-4xl mx-auto px-4 md:px-8 py-12 md:py-16">
+      <article className="max-w-5xl mx-auto px-4 md:px-8 py-12 md:py-16">
         {/* Date & Category */}
         <div className="text-sm text-gray-500 mb-6">
           {selectedPost.date} · {selectedPost.category}
@@ -81,7 +81,7 @@ export function ArticleContent({ selectedPost }: ArticleContentProps) {
 
   // 기본 아티클 표시
   return (
-    <article className="max-w-4xl mx-auto px-4 md:px-8 py-12 md:py-16">
+    <article className="max-w-5xl mx-auto px-4 md:px-8 py-12 md:py-16">
       {/* Date */}
       <div className="text-sm text-gray-500 mb-6">{article.date} · {article.category}</div>
 

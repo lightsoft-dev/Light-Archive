@@ -15,7 +15,7 @@ export function SearchResults({ query, results, onClear, onSelectPost }: SearchR
 
   return (
     <div className="bg-white border-b border-gray-200">
-      <div className="max-w-4xl mx-auto px-6 md:px-8 py-6">
+      <div className="max-w-5xl mx-auto px-6 md:px-8 py-6">
         {/* 검색 헤더 */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
