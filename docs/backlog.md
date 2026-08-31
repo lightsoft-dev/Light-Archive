@@ -159,3 +159,33 @@ components/admin/posts-table.tsx(730,1): error TS1160: Unterminated template lit
 줄여가며 이분 탐색. Next.js 16.1.6 / Turbopack.
 
 **트리거** — dev 콘솔 노이즈가 디버깅을 방해할 때, 또는 Next를 올릴 때.
+
+---
+
+## ℹ️ publish-agent-skill 의 skills.sh 색인이 PENDING
+
+**발견** 2026-08-31 (공개 직후)
+
+`woorichicken/publish-agent-skill` 을 public 으로 공개하고 원격 검증을 돌린 결과:
+
+```
+GITHUB_PUBLIC=PASS
+CLI_DISCOVERY=PASS      GitHub 저장소에서 --list 가 스킬을 찾는다
+REAL_INSTALL=PASS       임시 디렉터리에 실제 파일이 설치된다
+TELEMETRY=ENABLED       DISABLE_TELEMETRY·DO_NOT_TRACK 둘 다 미설정
+SKILLS_SH=PENDING       search=MISS · page=PASS
+```
+
+**설치는 지금도 된다.** 상세 페이지도 잡힌다. 검색 색인만 아직이다.
+skills.sh 반영은 익명 설치 텔레메트리 기반의 외부 비동기 상태라 즉시 나타나지 않는다.
+**공식 SLA 는 공개되어 있지 않으므로** "24시간 내" 같은 수치를 기준처럼 말하지 않는다.
+
+**재확인 명령**
+
+```bash
+node ~/.claude/skills/publish-agent-skill/scripts/verify-remote.mjs \
+  --source woorichicken/publish-agent-skill --skill publish-agent-skill
+```
+
+**트리거** — 다음 영업일에 한 번 확인(내부 기준). 그때도 `search=MISS` 면
+vercel-labs/skills 에 repo·skill·실행 로그를 붙여 이슈 후보를 만든다(전송은 사용자 확인 후).
