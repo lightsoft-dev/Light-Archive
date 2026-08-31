@@ -13,6 +13,7 @@ import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, ExternalLink, Save } from "lucide-react"
 import { toast } from "sonner"
 
+import { SkillImageUpload } from "@/components/admin/skill-image-upload"
 import { SkillSectionsEditor } from "@/components/admin/skill-sections-editor"
 import { SkillSectionRenderer } from "@/components/skill-sections"
 import { checkSession, fetchAdminArchives, updateAdminArchive } from "@/lib/admin-api"
@@ -29,6 +30,7 @@ export default function SkillEditPage() {
   const [description, setDescription] = useState("")
   const [visibility, setVisibility] = useState<SkillVisibility>("public")
   const [status, setStatus] = useState<string>("draft")
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
   const [issues, setIssues] = useState<{ path: string; message: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -61,6 +63,7 @@ export default function SkillEditPage() {
         setDescription(found.description || "")
         setVisibility(found.skill_meta?.visibility ?? "public")
         setStatus(found.status || "draft")
+        setThumbnailUrl(found.thumbnail_url ?? null)
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "불러오지 못했습니다")
       } finally {
@@ -82,6 +85,7 @@ export default function SkillEditPage() {
         title,
         description,
         status: nextStatus ?? status,
+        thumbnail_url: thumbnailUrl,
         sections,
         skill_meta: { ...(skill.skill_meta ?? {}), visibility },
       })
@@ -186,6 +190,17 @@ export default function SkillEditPage() {
               />
             </div>
             <div>
+              <label className="mb-1.5 block text-sm font-medium text-black">
+                대표 이미지 <span className="font-normal text-gray-400">목록 카드에 노출됩니다</span>
+              </label>
+              <SkillImageUpload
+                slug={skill.slug}
+                mode="thumbnail"
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+              />
+            </div>
+            <div>
               <label className="mb-1.5 block text-sm font-medium text-black">공개 범위</label>
               <div className="flex gap-2">
                 {(["public", "internal"] as SkillVisibility[]).map((v) => (
@@ -207,7 +222,10 @@ export default function SkillEditPage() {
           </div>
 
           <div>
-            <h2 className="mb-3 text-sm font-medium text-black">섹션</h2>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-sm font-medium text-black">섹션</h2>
+              <SkillImageUpload slug={skill.slug} mode="clipboard" />
+            </div>
             <SkillSectionsEditor sections={sections} onChange={setSections} issues={issues} />
           </div>
         </div>

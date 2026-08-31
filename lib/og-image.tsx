@@ -37,7 +37,15 @@ type ArchiveForOG = Pick<
   "title" | "description" | "excerpt" | "category" | "thumbnail_url" | "image"
 >
 
-export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
+interface OGOptions {
+  /** 스킬 OG 에만 쓴다 — 공유 카드에서 설치 명령이 바로 보이면 클릭 없이도 값이 전달된다 */
+  installCommand?: string
+}
+
+export async function generateArchiveOGImage(
+  archive: ArchiveForOG | null,
+  ogOptions: OGOptions = {}
+) {
   const title = archive?.title ?? "Light Archive"
   const description = archive?.description ?? archive?.excerpt ?? ""
   const category = archive?.category ?? ""
@@ -127,7 +135,7 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
           )}
         </div>
 
-        {/* 하단: 구분선 + URL */}
+        {/* 하단: (스킬이면) 설치 명령 + 구분선 + URL */}
         <div
           style={{
             display: "flex",
@@ -135,6 +143,23 @@ export async function generateArchiveOGImage(archive: ArchiveForOG | null) {
             gap: "16px",
           }}
         >
+          {ogOptions.installCommand && (
+            <div
+              style={{
+                display: "flex",
+                backgroundColor: "#000",
+                color: "#fff",
+                padding: "16px 22px",
+                borderRadius: "12px",
+                fontSize: 22,
+                marginBottom: "8px",
+              }}
+            >
+              {ogOptions.installCommand.length > 58
+                ? ogOptions.installCommand.slice(0, 58) + "…"
+                : ogOptions.installCommand}
+            </div>
+          )}
           <div style={{ display: "flex", height: 1, backgroundColor: "#e5e5e5" }} />
           <div style={{ display: "flex", fontSize: 20, color: "#999" }}>
             {SITE_HOST}

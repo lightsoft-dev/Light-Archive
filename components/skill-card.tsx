@@ -35,45 +35,59 @@ export function SkillCard({ skill }: { skill: SkillCatalogItem }) {
   return (
     <Link
       href={`/skills/${skill.slug}`}
-      className="group flex flex-col rounded-2xl border border-gray-200 p-6 transition-colors hover:border-black"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 transition-colors hover:border-black"
     >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-lg font-medium text-black leading-snug">{skill.title}</h3>
-        {isInternal && (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] text-gray-600">
-            <Lock className="w-3 h-3" />
-            사내 전용
-          </span>
-        )}
-      </div>
-
-      <p className="mt-2.5 text-sm text-gray-600 leading-relaxed line-clamp-3">{skill.description}</p>
-
-      {command && (
-        <div className="mt-5 flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
-          <code className="flex-1 truncate font-mono text-xs text-gray-700">{command}</code>
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label="설치 명령 복사"
-            className="shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-black"
-          >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
+      {/* 이미지는 카드 패딩 밖에 둔다. 음수 마진으로 상쇄하면 모서리에서 어긋난다 */}
+      {skill.thumbnail_url && (
+        <div className="aspect-[16/9] shrink-0 overflow-hidden bg-gray-100">
+          <img
+            src={skill.thumbnail_url}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          />
         </div>
       )}
 
-      <div className="mt-5 flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
-        <div className="flex flex-wrap gap-1.5">
-          {(skill.tags || []).slice(0, 3).map((tag) => (
-            <span key={tag} className="text-xs text-gray-400">
-              #{tag}
+      <div className="flex flex-1 flex-col p-6">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-lg font-medium text-black leading-snug">{skill.title}</h3>
+          {isInternal && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] text-gray-600">
+              <Lock className="w-3 h-3" />
+              사내 전용
             </span>
-          ))}
+          )}
         </div>
-        {typeof skill.view_count === "number" && (
-          <span className="shrink-0 text-xs text-gray-400">조회 {skill.view_count}</span>
+
+        <p className="mb-5 mt-2.5 line-clamp-3 text-sm leading-relaxed text-gray-600">{skill.description}</p>
+
+        {command && (
+          <div className="mb-5 flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
+            <code className="flex-1 truncate font-mono text-xs text-gray-700">{command}</code>
+            <button
+              type="button"
+              onClick={handleCopy}
+              aria-label="설치 명령 복사"
+              className="shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-black"
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         )}
+
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
+          <div className="flex flex-wrap gap-1.5">
+            {(skill.tags || []).slice(0, 3).map((tag) => (
+              <span key={tag} className="text-xs text-gray-400">
+                #{tag}
+              </span>
+            ))}
+          </div>
+          {typeof skill.view_count === "number" && (
+            <span className="shrink-0 text-xs text-gray-400">조회 {skill.view_count}</span>
+          )}
+        </div>
       </div>
     </Link>
   )

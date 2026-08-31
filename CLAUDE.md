@@ -221,6 +221,39 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 `scope` `metrics` `faq` `code` `related`). 에이전트가 스킬 성격에 맞게 골라 조합한다.
 성격별 권장 조합은 `SECTION_PRESETS`(`lib/skill-sections.ts`)에 있다.
 
+### 사내 전용 스킬 (2026-08-31)
+
+`skill_meta.visibility = "internal"` 은 **라벨이 아니라 실제 접근 제어**다. 두 겹으로 막는다.
+
+| 층 | 무엇을 막나 |
+|---|---|
+| RLS (`006`) | anon key 로 PostgREST 를 직접 쳐도 internal 행이 안 보인다 |
+| 서버 API | 목록·상세·단건·OG 모두 관리자 세션 쿠키를 보고 포함 여부를 정한다 |
+
+- 자격이 없으면 **404**(403 아님) — 403 은 그 이름의 스킬이 존재한다는 사실을 흘린다.
+- `getSkillCatalog`/`getSkillBySlug` 의 `includeInternal` 기본값은 `false`.
+  빠뜨렸을 때 더 보이는 쪽이 아니라 덜 보이는 쪽으로 실패해야 한다.
+- **OG 이미지도 막혀 있다** — 링크를 슬랙에 붙이는 것만으로 제목·설명이 새면 안 된다.
+  익명에게는 기본 카드("Light Archive")만 나간다.
+- `lib/supabase-skills.ts` 는 **서버 전용**이다. 클라이언트에서 import 하면 anon 으로 붙어
+  사내 스킬이 없는 것처럼 보인다. 목록 화면도 `/api/skills` 를 거친다.
+
+### 이미지
+
+| 어디 | 무엇 |
+|---|---|
+| 목록 카드 | `thumbnail_url` — 있으면 16:9 썸네일, 없으면 텍스트 카드 |
+| 본문 | `demo` 섹션의 `media[].url` |
+| 공유 | `/skills/{slug}/opengraph-image` — 공개 스킬이면 설치 명령까지 카드에 넣는다 |
+
+업로드는 `POST /api/skills/assets` 하나로 모았다(관리자 쿠키 **또는** Bearer 토큰).
+저장 키는 서버가 ASCII 로 만든다 — 한글 파일명을 키에 쓰면 Storage 가 `InvalidKey` 로
+거부하고 macOS 는 한글을 자모 분리형으로 넘겨서 파일명이 통째로 깨진다.
+(전역 룰 `korean-filename-storage-key.md`)
+
+- 관리 화면: 대표 이미지는 드래그&드롭, 섹션용은 "이미지 업로드 → URL 복사"
+- 에이전트: `light-archive-publish/scripts/upload-image.mjs --file <경로> --slug <slug>`
+
 ### 관리 화면에서 섹션 편집
 
 `/admin/skills/{slug}` — 왼쪽 편집 / 오른쪽 실시간 미리보기.
