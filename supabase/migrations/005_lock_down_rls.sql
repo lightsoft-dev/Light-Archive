@@ -1,17 +1,21 @@
 -- =====================================================
--- archive_items RLS 잠금  ⚠️ 아직 적용하지 않음
+-- archive_items RLS 잠금  ✅ 적용 완료 2026-08-31
 -- =====================================================
+-- 적용 전 실측(프로덕션 anon key):
+--   INSERT 201 · DELETE 204 · draft 조회 3건  → 익명 위조·삭제·초안열람이 모두 가능했다
+-- 적용 후 실측:
+--   INSERT 401 · UPDATE/DELETE 0행(데이터 무변) · draft 0건 · published 23건
+--   관리자 27건 조회 OK · 서버 PATCH 200 · 조회수 4→5 증가
 -- 현재 상태(001에서 만들어진 그대로): SELECT/INSERT/UPDATE/DELETE 가 전부
 -- `{public}` 역할에 `true` 다. anon key 는 공개 사이트의 브라우저 번들에 들어 있으므로
 -- 그 키를 읽은 누구나 아카이브를 위조·수정·삭제할 수 있다.
 --
--- ⚠️ 적용 전 반드시 필요한 것
---   1) SUPABASE_SERVICE_ROLE_KEY 가 배포 환경(Vercel)과 .env.local 에 설정돼 있어야 한다.
---      쓰기 정책을 전부 지우면 service_role 만이 유일한 쓰기 경로가 되기 때문이다.
---      (service_role 은 RLS 를 우회한다)
---   2) 관리자 쓰기가 서버 API 경유여야 한다 → 2026-08-31 완료
---      (/api/admin/archives, /api/admin/session)
---   3) 조회수 함수가 SECURITY DEFINER 여야 한다 → 004 에서 완료
+-- 선결 조건 (전부 완료)
+--   1) SUPABASE_SERVICE_ROLE_KEY 를 Vercel·.env.local 에 설정 ✅
+--      쓰기 정책을 전부 지우면 service_role 만이 유일한 쓰기 경로가 된다(RLS 우회).
+--   2) 관리자 쓰기가 서버 API 경유 ✅ (배포 bb025f8)
+--   3) 조회수 함수가 SECURITY DEFINER ✅ (004)
+--      — 이걸 안 했으면 조회수 증가가 에러도 없이 조용히 실패했다.
 --
 -- ⚠️ 이 Supabase 프로젝트는 회사 ERP 테이블(quotations·expenses·receipts·projects…)과
 --    공유된다. service_role 키는 그 테이블까지 권한을 준다. Light Archive 가 침해되면

@@ -4,41 +4,45 @@
 
 ---
 
-## 🟡 archive_items RLS 개방 — 코드는 준비 완료, **service_role 키 대기**
+## ✅ archive_items RLS 개방 — 해결 (2026-08-31)
 
-**발견** 2026-08-31 · **실측 확인** 같은 날 (pg_policies 조회)
+`archive_items`의 정책 4개가 전부 `{public}`에 `true`였다. anon key는 공개 사이트 번들에
+들어 있으므로 **누구나 위조·수정·삭제할 수 있었다.**
 
-`archive_items`의 정책 4개가 전부 `{public}` 역할에 `true`다. anon key는 공개 사이트의
-브라우저 번들에 들어 있으므로, **그 키를 읽은 누구나 아카이브를 위조·수정·삭제할 수 있다.**
+### 잠그기 전 실측 (프로덕션)
 
-```
-archive_items_select_policy   SELECT  {public}  USING (true)
-archive_items_insert_policy   INSERT  {public}  WITH CHECK (true)
-archive_items_update_policy   UPDATE  {public}  USING (true)
-archive_items_delete_policy   DELETE  {public}  USING (true)
-```
-
-### 끝난 것 (2026-08-31)
-
-| 선결 조건 | 상태 |
+| 시도 | 결과 |
 |---|---|
-| 관리자 인증을 서버로 이관 | ✅ `POST /api/admin/session` — 비밀번호 서버 검증 + httpOnly 서명 쿠키 |
-| 관리자 쓰기를 서버 API로 이관 | ✅ `/api/admin/archives` GET·POST, `/{id}` GET·PATCH·DELETE |
-| 브라우저의 Supabase 직접 쓰기 제거 | ✅ 잔존 0건 (`createArchive`·`updateArchive`·`deleteArchive` 호출 없음) |
-| 조회수 함수 RLS 우회 | ✅ 004 마이그레이션 — `SECURITY DEFINER` + `search_path` 고정 |
-| 정책 교체 SQL | ✅ `supabase/migrations/005_lock_down_rls.sql` (작성만, 미적용) |
+| anon key로 글 INSERT | **201 성공** — 위조 글이 실제로 들어갔다 |
+| anon key로 DELETE | **204 성공** |
+| anon key로 draft 조회 | **3건** — 비공개 초안이 익명에게 보였다 |
 
-### 남은 것 — 사람만 할 수 있는 일
+### 한 일
 
-`SUPABASE_SERVICE_ROLE_KEY`를 Supabase 대시보드에서 가져와
-`.env.local`과 Vercel 환경변수에 넣어야 한다. **MCP로는 얻을 수 없다**(publishable 키만 제공).
-`NEXT_PUBLIC_` 접두사를 붙이면 안 된다 — 붙이는 순간 브라우저로 새어 나가 지금보다 나빠진다.
+1. **관리자 인증을 서버로** — 브라우저 비교(`admin`/`1234`) + sessionStorage 플래그
+   → 서버 검증 + httpOnly 서명 쿠키. 운영 비밀번호도 강한 값으로 교체
+   (RLS를 조여도 비밀번호가 `1234`면 누구나 로그인해 쓰기 권한을 얻는다)
+2. **쓰기를 서버 API로** — `/api/admin/archives` 6개 엔드포인트. 브라우저의 Supabase 직접 쓰기 0건
+3. **조회수 함수를 SECURITY DEFINER로** — INVOKER인 채로 잠그면 조회수 증가가
+   **에러도 없이** 실패한다(RLS로 걸린 UPDATE는 0 rows). 004에서 선처리
+4. **정책 교체** — SELECT는 `status='published'`만, 쓰기 정책 3개는 삭제
+   (RLS 켜짐 + 정책 없음 = 거부. service_role만 우회)
 
-키가 들어오면 `005_lock_down_rls.sql`을 적용하고 그 파일 3번 항목의 검증 5개를 돌린다.
+### 잠근 뒤 실측
 
-**트리거** — 아카이브를 외부에 홍보하기 전 / 사내 외 트래픽이 붙기 전.
+| 항목 | 결과 |
+|---|---|
+| anon INSERT | **401 차단** |
+| anon UPDATE/DELETE | 204지만 **0행** — 대상 글의 제목·존재 그대로 확인 |
+| anon draft 조회 | **0건** |
+| anon published 조회 | 23건 (정상) |
+| 관리자 목록 | 27건 (draft 4 포함) |
+| 서버 PATCH | 200, `updated_at` 갱신 |
+| 조회수 | 4 → 5 증가 |
+| 전체 행 수 | 27건 유지, probe 잔여 0 |
 
-**관련** `docs/skill-catalog-plan.md` 9장, 아래 「ERP와 DB 공유」 항목
+**남은 것** — `service_role` 키가 대화 기록에 노출됐다. Supabase Dashboard → Settings → API에서
+**로테이션 권장**. 로테이션 후 Vercel env `SUPABASE_SERVICE_ROLE_KEY`만 갈아끼우면 된다.
 
 ---
 

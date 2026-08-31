@@ -8,6 +8,9 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { ADMIN_COOKIE, verifySessionToken } from "@/lib/admin-session"
 import { getWriteClient } from "@/lib/supabase-server"
+import { skillSectionsSchema } from "@/lib/skill-sections"
+import { formatZodIssues } from "@/lib/skill-publish-schema"
+import { ZodError } from "zod"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -53,6 +56,23 @@ export async function PATCH(request: Request, { params }: Props) {
   const { id } = await params
   try {
     const updates = await request.json()
+
+    // 스킬 섹션은 저장 전에 검증한다. 화면에서 JSON 을 직접 고칠 수 있어서
+    // 깨진 구조가 그대로 들어가면 상세 페이지가 빈 화면이 된다.
+    if (updates?.sections !== undefined && updates.sections !== null) {
+      try {
+        updates.sections = skillSectionsSchema.parse(updates.sections)
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return NextResponse.json(
+            { ok: false, error: "섹션 검증 실패", issues: formatZodIssues(error) },
+            { status: 400 }
+          )
+        }
+        throw error
+      }
+    }
+
     const { data, error } = await getWriteClient()
       .from("archive_items")
       .update(updates)

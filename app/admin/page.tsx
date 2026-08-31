@@ -113,7 +113,12 @@ export default function AdminPage() {
   }
 
   const handleEdit = (archive: Archive) => {
-    // 수정 페이지로 이동
+    // 스킬은 섹션 구조가 달라서 전용 편집기로 보낸다(왼쪽 편집 / 오른쪽 미리보기).
+    const slug = (archive as { slug?: string }).slug
+    if (archive.category === "스킬" && slug) {
+      router.push(`/admin/skills/${slug}`)
+      return
+    }
     router.push(`/admin/edit/${archive.id}`)
   }
 

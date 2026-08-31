@@ -221,6 +221,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 `scope` `metrics` `faq` `code` `related`). 에이전트가 스킬 성격에 맞게 골라 조합한다.
 성격별 권장 조합은 `SECTION_PRESETS`(`lib/skill-sections.ts`)에 있다.
 
+### 관리 화면에서 섹션 편집
+
+`/admin/skills/{slug}` — 왼쪽 편집 / 오른쪽 실시간 미리보기.
+
+에이전트가 채운 것을 사람이 **다듬는** 게 주 시나리오라, 타입별 전용 폼 대신
+**구조 조작은 버튼, 내용은 JSON** 으로 나눴다(12종 × 필드 수만큼 UI 를 만들고 스키마가
+바뀔 때마다 따라가는 비용을 피한다).
+
+- `components/admin/skill-sections-editor.tsx` — 섹션 카드(↑↓ 순서, 삭제, + 추가)
+- 추가 목록에서 이미 쓴 singleton 섹션은 비활성 (서버 스키마와 같은 규칙)
+- 검증은 두 겹 — 브라우저가 JSON 파싱 오류를 즉시 잡고,
+  `PATCH /api/admin/archives/{id}` 가 스키마를 본다. 실패하면 400 + `issues[].path` 로
+  어느 섹션의 어느 필드인지 카드에 표시된다
+- 관리자 목록에서 `category === "스킬"` 인 행은 이 편집기로 간다
+
 ### 게시 API
 
 ```bash
@@ -281,10 +296,17 @@ DELETE /api/admin/archives/{id} 삭제
 화면에서 호출하지 않는다.** 새 관리 기능을 붙일 때 그걸 다시 부르면 RLS 를 조인 뒤 깨진다 —
 `lib/admin-api.ts` 를 쓴다.
 
-### 아직 남은 것
+### RLS 상태 (2026-08-31 잠금 완료)
 
-RLS 는 아직 열려 있다(`supabase/migrations/005_lock_down_rls.sql` 미적용).
-`SUPABASE_SERVICE_ROLE_KEY` 가 있어야 적용할 수 있다 — `docs/backlog.md` 참조.
+`archive_items` 는 **읽기가 `status='published'` 로 제한**되고 **쓰기 정책이 없다**.
+정책이 없으면 거부가 기본이고 `service_role` 만 우회하므로, 서버 API 가 유일한 쓰기 경로다.
+
+잠그기 전에는 anon key 로 INSERT 201 · DELETE 204 · draft 조회가 모두 됐다(실측).
+잠근 뒤 INSERT 401 · draft 0건 · 관리자 27건 · 조회수 증가 정상.
+
+**새 기능에서 브라우저가 Supabase 에 직접 쓰면 조용히 실패한다** —
+PostgREST 는 RLS 로 걸린 UPDATE/DELETE 를 에러가 아니라 0 rows 로 돌려준다.
+쓰기는 반드시 `lib/admin-api.ts` 를 거친다.
 
 ## Key Features & Implementation Notes
 
