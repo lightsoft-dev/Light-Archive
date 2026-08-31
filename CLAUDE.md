@@ -229,7 +229,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
   `GET https://www.skills.sh/api/search?q=<name>` → `{ skills: [{ name, source, installs }] }`.
   `source` 가 `owner/repo` 라서 그것으로 우리 스킬을 골라낸다.
 - **실패하면 조용히 `null`** — 외부 비공식 경로다. 설치수 때문에 목록이 안 뜨면 본말전도다.
-  타임아웃 5초, `revalidate` 1시간 캐시.
+  타임아웃 5초.
+- **캐시는 프로세스 메모리 TTL(1시간)이다.** 처음엔 fetch 의 `next: { revalidate }` 를 썼는데
+  실측하니 안 먹었다 — 이 API 는 `cookies()` 로 세션을 보기 때문에 동적 렌더링이고
+  그 컨텍스트의 fetch 는 데이터 캐시를 타지 않는다(요청 5회 → 외부 호출 10회).
+  인메모리로 바꾼 뒤 5회 → 2회(스킬 수만큼 1번). 실패도 캐시한다 —
+  아직 색인 안 된 스킬을 매번 다시 물어볼 이유가 없다.
 - 사내 전용은 skills.sh 에 없으므로 조회하지 않는다.
 - 정렬에서 **설치수를 모르는 스킬은 뒤로** 보낸다(`?? -1`). 0 으로 취급하면
   "설치 0회"와 "모름"이 섞여 순위가 거짓말이 된다.
