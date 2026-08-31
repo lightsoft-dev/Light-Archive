@@ -10,13 +10,13 @@ export const mockSkills: Skill[] = [
     title: "Next.js 15의 새로운 기능들",
     description: "Next.js 15에서 추가된 주요 기능들과 성능 개선 사항을 살펴봅니다.",
     category: "기술",
-    subCategory: "클로드 코드",
+    sub_category: "클로드 코드",
     date: "2024년 10월 30일",
     tags: ["Next.js", "React", "웹 개발"],
     technologies: ["Next.js", "React", "TypeScript"],
     difficulty: "중급",
-    viewCount: 1542,
-    commentCount: 28,
+    view_count: 1542,
+    comment_count: 28,
     content: `<p>Next.js 15가 출시되면서 많은 새로운 기능들과 성능 개선이 이루어졌습니다. 이번 업데이트는 개발자 경험과 애플리케이션 성능을 크게 향상시킵니다.</p>
 
 <h2>주요 변경사항</h2>
@@ -43,13 +43,13 @@ export const mockSkills: Skill[] = [
     title: "TypeScript 타입 시스템 깊이 이해하기",
     description: "TypeScript의 강력한 타입 시스템을 활용하여 더 안전하고 예측 가능한 코드를 작성하는 방법을 알아봅니다.",
     category: "기술",
-    subCategory: "클로드 코드",
+    sub_category: "클로드 코드",
     date: "2024년 10월 22일",
     tags: ["TypeScript", "타입 시스템", "개발"],
     technologies: ["TypeScript"],
     difficulty: "중급",
-    viewCount: 987,
-    commentCount: 19,
+    view_count: 987,
+    comment_count: 19,
     content: `<p>TypeScript의 타입 시스템은 JavaScript에 정적 타입 체크를 추가하여 개발 시점에 오류를 발견할 수 있게 해줍니다. 타입 시스템을 제대로 이해하고 활용하면 더 안전하고 유지보수하기 쉬운 코드를 작성할 수 있습니다.</p>
 
 <h2>타입 시스템의 기본</h2>
@@ -76,13 +76,13 @@ export const mockSkills: Skill[] = [
     title: "React Server Components 실전 가이드",
     description: "React Server Components의 개념부터 실제 프로젝트 적용까지. 성능 최적화와 사용자 경험 개선을 위한 실용적인 접근법을 다룹니다.",
     category: "기술",
-    subCategory: "클로드 코드",
+    sub_category: "클로드 코드",
     date: "2024년 10월 18일",
     tags: ["React", "Server Components", "성능 최적화"],
     technologies: ["React", "Next.js"],
     difficulty: "고급",
-    viewCount: 2134,
-    commentCount: 45,
+    view_count: 2134,
+    comment_count: 45,
     content: `<p>React Server Components는 React의 혁신적인 기능으로, 서버에서 컴포넌트를 렌더링하여 번들 크기를 줄이고 초기 로딩 시간을 단축합니다. 이 기술을 제대로 이해하고 활용하면 웹 애플리케이션의 성능을 크게 향상시킬 수 있습니다.</p>
 
 <h2>Server Components란?</h2>
@@ -108,13 +108,13 @@ export const mockSkills: Skill[] = [
     title: "LLM 기반 질의응답 시스템 구축",
     description: "OpenAI API를 활용한 자연어 처리 기술을 적용하여 고객 지원 챗봇을 개발했습니다.",
     category: "기술",
-    subCategory: "인공지능 활용",
+    sub_category: "인공지능 활용",
     date: "2024년 10월 15일",
     tags: ["LLM", "NLP", "Generative AI", "Chatbot"],
     technologies: ["OpenAI API", "FastAPI", "React"],
     difficulty: "고급",
-    viewCount: 2876,
-    commentCount: 52,
+    view_count: 2876,
+    comment_count: 52,
     content: `<p>대규모 언어 모델(LLM)을 활용하여 질의응답 시스템을 구축하는 것은 최근 가장 주목받는 AI 활용 사례 중 하나입니다. 이 기술을 통해 자연어로 질문을 받고 적절한 답변을 생성하는 시스템을 만들 수 있습니다.</p>
 
 <h2>LLM 기반 시스템의 구성</h2>
@@ -141,13 +141,13 @@ export const mockSkills: Skill[] = [
     title: "컴퓨터 비전 기반 이미지 분석",
     description: "딥러닝을 활용한 이미지 인식 및 분석 기술을 구현하는 방법을 소개합니다.",
     category: "기술",
-    subCategory: "인공지능 활용",
+    sub_category: "인공지능 활용",
     date: "2024년 10월 12일",
     tags: ["Computer Vision", "딥러닝", "이미지 처리"],
     technologies: ["Python", "TensorFlow", "OpenCV"],
     difficulty: "고급",
-    viewCount: 1923,
-    commentCount: 34,
+    view_count: 1923,
+    comment_count: 34,
     content: `<p>컴퓨터 비전은 컴퓨터가 이미지나 비디오를 이해하고 분석하는 기술입니다. 딥러닝의 발전으로 이미지 인식, 객체 탐지, 이미지 분할 등의 작업에서 인간 수준의 성능을 달성할 수 있게 되었습니다.</p>
 
 <h2>컴퓨터 비전의 기본 개념</h2>
@@ -174,13 +174,13 @@ export const mockSkills: Skill[] = [
     title: "자연어 처리 기초",
     description: "자연어 처리는 컴퓨터가 인간의 언어를 이해하는 기술입니다. 기본 개념부터 실전 활용까지 다룹니다.",
     category: "기술",
-    subCategory: "인공지능 활용",
+    sub_category: "인공지능 활용",
     date: "2024년 10월 8일",
     tags: ["NLP", "자연어 처리", "AI"],
     technologies: ["Python", "spaCy", "Transformers"],
     difficulty: "중급",
-    viewCount: 1156,
-    commentCount: 22,
+    view_count: 1156,
+    comment_count: 22,
     content: `<p>자연어 처리(NLP)는 컴퓨터가 인간의 언어를 이해하고 처리하는 기술입니다. 최근 Transformer 아키텍처의 발전으로 텍스트 이해, 생성, 번역 등의 작업에서 놀라운 성과를 보이고 있습니다.</p>
 
 <h2>자연어 처리의 기본 개념</h2>
@@ -207,13 +207,13 @@ export const mockSkills: Skill[] = [
     title: "Claude Code로 개발 생산성 10배 높이기",
     description: "AI 코딩 어시스턴트 Claude Code를 활용한 효율적인 개발 워크플로우",
     category: "기술",
-    subCategory: "클로드 코드",
+    sub_category: "클로드 코드",
     date: "2024년 10월 5일",
     tags: ["Claude Code", "AI 개발 도구", "생산성"],
     technologies: ["Claude Code", "VS Code", "Git"],
     difficulty: "초급",
-    viewCount: 3421,
-    commentCount: 67,
+    view_count: 3421,
+    comment_count: 67,
     content: `<p>Claude Code는 Anthropic이 개발한 AI 코딩 어시스턴트로, 개발자의 생산성을 크게 향상시킬 수 있는 강력한 도구입니다. 단순한 코드 자동완성을 넘어 전체 프로젝트의 컨텍스트를 이해하고 복잡한 작업을 수행할 수 있습니다.</p>
 
 <h2>Claude Code란?</h2>
@@ -241,13 +241,13 @@ export const mockSkills: Skill[] = [
     title: "Tailwind CSS 마스터하기",
     description: "유틸리티 우선 CSS 프레임워크로 빠르게 UI 구축하기",
     category: "기술",
-    subCategory: "클로드 코드",
+    sub_category: "클로드 코드",
     date: "2024년 10월 2일",
     tags: ["Tailwind CSS", "CSS", "UI 디자인"],
     technologies: ["Tailwind CSS", "PostCSS"],
     difficulty: "초급",
-    viewCount: 2187,
-    commentCount: 41,
+    view_count: 2187,
+    comment_count: 41,
     content: `<p>Tailwind CSS는 유틸리티 클래스를 활용하여 빠르게 UI를 구축할 수 있는 CSS 프레임워크입니다. 커스텀 CSS를 작성하지 않고도 복잡한 디자인을 구현할 수 있습니다.</p>
 
 <h2>Tailwind CSS의 장점</h2>
@@ -274,13 +274,13 @@ export const mockSkills: Skill[] = [
     title: "Prompt Engineering 완벽 가이드",
     description: "효과적인 프롬프트 작성으로 AI 성능 극대화하기",
     category: "기술",
-    subCategory: "인공지능 활용",
+    sub_category: "인공지능 활용",
     date: "2024년 9월 28일",
     tags: ["Prompt Engineering", "LLM", "AI"],
     technologies: ["ChatGPT", "Claude", "Gemini"],
     difficulty: "중급",
-    viewCount: 3567,
-    commentCount: 72,
+    view_count: 3567,
+    comment_count: 72,
     content: `<p>프롬프트 엔지니어링은 AI 언어 모델로부터 원하는 결과를 얻기 위해 효과적인 입력을 설계하는 기술입니다. 좋은 프롬프트는 AI의 성능을 극대화하고 정확한 결과를 얻을 수 있게 합니다.</p>
 
 <h2>프롬프트 엔지니어링의 중요성</h2>
@@ -308,13 +308,13 @@ export const mockSkills: Skill[] = [
     title: "RAG 시스템 구축하기",
     description: "검색 증강 생성으로 정확한 AI 답변 만들기",
     category: "기술",
-    subCategory: "인공지능 활용",
+    sub_category: "인공지능 활용",
     date: "2024년 9월 25일",
     tags: ["RAG", "Vector DB", "LLM"],
     technologies: ["LangChain", "Pinecone", "OpenAI"],
     difficulty: "고급",
-    viewCount: 2943,
-    commentCount: 58,
+    view_count: 2943,
+    comment_count: 58,
     content: `<p>RAG(Retrieval-Augmented Generation)는 외부 지식을 검색하여 LLM의 응답에 활용하는 기술입니다. 이를 통해 최신 정보를 활용하고, 환각(hallucination)을 줄이며, 특정 도메인에 특화된 답변을 생성할 수 있습니다.</p>
 
 <h2>RAG 시스템의 구조</h2>
@@ -342,13 +342,13 @@ export const mockSkills: Skill[] = [
     title: "GitHub Actions로 CI/CD 자동화",
     description: "효율적인 배포 파이프라인 구축하기",
     category: "기술",
-    subCategory: "web",
+    sub_category: "web",
     date: "2024년 9월 20일",
     tags: ["CI/CD", "GitHub Actions", "DevOps"],
     technologies: ["GitHub Actions", "Docker", "Vercel"],
     difficulty: "중급",
-    viewCount: 1876,
-    commentCount: 33,
+    view_count: 1876,
+    comment_count: 33,
     content: `<p>GitHub Actions는 코드 저장소에서 직접 CI/CD 파이프라인을 구축할 수 있는 강력한 도구입니다. 테스트 자동화, 빌드, 배포까지 모든 과정을 자동화하여 개발 생산성을 높일 수 있습니다.</p>
 
 <h2>CI/CD의 필요성</h2>

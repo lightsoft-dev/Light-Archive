@@ -169,7 +169,7 @@ export function ArchiveContent({ archive, relatedSection }: ArchiveContentProps)
 
       {/* Date */}
       <div className="text-sm text-gray-500 mb-6">
-        {[archive.date, archive.subCategory || archive.category].filter(Boolean).join(" · ")}
+        {[archive.date, archive.sub_category || archive.category].filter(Boolean).join(" · ")}
       </div>
 
       {/* Title */}

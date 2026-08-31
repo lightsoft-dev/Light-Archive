@@ -15,8 +15,8 @@ export const mockProjects: Project[] = [
     tags: ["AI", "챗봇", "고객서비스"],
     technologies: ["React", "Python", "OpenAI API"],
     difficulty: "중급",
-    viewCount: 1240,
-    commentCount: 23,
+    view_count: 1240,
+    comment_count: 23,
     content: `<p>고객 서비스의 효율성을 높이기 위해 AI 기반 챗봇 플랫폼을 개발했습니다. 이 플랫폼은 자연어 처리 기술을 활용하여 고객의 문의를 실시간으로 이해하고 적절한 답변을 제공합니다.</p>
 
 <h2>프로젝트 배경</h2>
@@ -52,8 +52,8 @@ export const mockProjects: Project[] = [
     tags: ["데이터 분석", "시각화", "대시보드"],
     technologies: ["React", "TypeScript", "Chart.js"],
     difficulty: "중급",
-    viewCount: 892,
-    commentCount: 15,
+    view_count: 892,
+    comment_count: 15,
     content: `<p>비즈니스 의사결정을 지원하기 위해 실시간 데이터를 시각화하고 인사이트를 제공하는 대시보드를 개발했습니다. 다양한 데이터 소스를 통합하여 한눈에 파악할 수 있는 인터페이스를 제공합니다.</p>
 
 <h2>프로젝트 목표</h2>
@@ -89,8 +89,8 @@ export const mockProjects: Project[] = [
     tags: ["AI", "이미지 생성", "머신러닝"],
     technologies: ["Python", "TensorFlow", "React"],
     difficulty: "고급",
-    viewCount: 2156,
-    commentCount: 42,
+    view_count: 2156,
+    comment_count: 42,
     content: `<p>텍스트 입력만으로 고품질 이미지를 생성하는 AI 도구를 개발했습니다. Stable Diffusion 모델을 활용하여 사용자의 창의성을 지원하고 다양한 스타일의 이미지를 생성할 수 있습니다.</p>
 
 <h2>기술적 도전</h2>
@@ -126,8 +126,8 @@ export const mockProjects: Project[] = [
     tags: ["AI", "음성인식", "NLP"],
     technologies: ["Python", "Speech Recognition", "FastAPI"],
     difficulty: "고급",
-    viewCount: 1834,
-    commentCount: 31,
+    view_count: 1834,
+    comment_count: 31,
     content: `<p>음성으로 자연스럽게 대화할 수 있는 AI 비서 시스템을 개발했습니다. 음성 인식, 자연어 처리, 음성 합성 기술을 통합하여 사용자와 상호작용합니다.</p>
 
 <h2>시스템 개요</h2>
@@ -163,8 +163,8 @@ export const mockProjects: Project[] = [
     tags: ["인공지능", "머신러닝", "자연어처리", "웹 개발", "클라우드"],
     technologies: ["Next.js", "TypeScript", "Python", "TensorFlow", "PostgreSQL", "Redis"],
     difficulty: "고급",
-    viewCount: 3245,
-    commentCount: 67,
+    view_count: 3245,
+    comment_count: 67,
     content: `<p>최신 AI 기술을 활용하여 블로그 포스트, 마케팅 콘텐츠, 소셜 미디어 게시물 등을 자동으로 생성하는 플랫폼을 개발했습니다. GPT 모델과 다양한 생성형 AI 기술을 통합하여 사용자가 원하는 스타일과 톤의 콘텐츠를 생성할 수 있습니다.</p>
 
 <h2>프로젝트 비전</h2>
@@ -211,13 +211,13 @@ export const mockProjects: Project[] = [
     description: "고객 관계 관리를 위한 통합 솔루션",
     image: "/crm-dashboard-interface.jpg",
     category: "프로젝트",
-    subCategory: "사내시스템",
+    sub_category: "사내시스템",
     date: "2024년 2월 20일",
     tags: ["CRM", "사내시스템", "업무자동화"],
     technologies: ["Next.js", "PostgreSQL", "Prisma", "Redis"],
     difficulty: "중급",
-    viewCount: 678,
-    commentCount: 12,
+    view_count: 678,
+    comment_count: 12,
     content: `<p>영업팀과 고객지원팀의 업무 효율을 높이기 위해 통합 CRM 시스템을 구축했습니다. 고객 정보 관리, 영업 파이프라인, 티켓 관리 등의 기능을 한 곳에서 제공합니다.</p>
 
 <h2>프로젝트 배경</h2>
@@ -249,13 +249,13 @@ export const mockProjects: Project[] = [
     description: "확장 가능한 온라인 쇼핑몰 플랫폼",
     image: "/ecommerce-platform-screenshot.jpg",
     category: "프로젝트",
-    subCategory: "web",
+    sub_category: "web",
     date: "2024년 2월 15일",
     tags: ["E-commerce", "Web", "결제시스템"],
     technologies: ["Next.js", "Stripe", "Vercel", "Supabase"],
     difficulty: "고급",
-    viewCount: 2543,
-    commentCount: 48,
+    view_count: 2543,
+    comment_count: 48,
     content: `<p>현대적인 사용자 경험과 안정적인 결제 시스템을 갖춘 전자상거래 플랫폼을 구축했습니다. 반응형 디자인과 빠른 페이지 로딩으로 높은 전환율을 달성했습니다.</p>
 
 <h2>프로젝트 목표</h2>
@@ -288,13 +288,13 @@ export const mockProjects: Project[] = [
     description: "팀 협업을 위한 실시간 문서 편집 플랫폼",
     image: "/collaborative-editor-interface.jpg",
     category: "프로젝트",
-    subCategory: "web",
+    sub_category: "web",
     date: "2024년 2월 5일",
     tags: ["실시간 협업", "WebSocket", "문서 편집"],
     technologies: ["Next.js", "WebSocket", "Yjs", "MongoDB"],
     difficulty: "고급",
-    viewCount: 1789,
-    commentCount: 36,
+    view_count: 1789,
+    comment_count: 36,
     content: `<p>여러 사용자가 동시에 문서를 편집할 수 있는 실시간 협업 플랫폼을 개발했습니다. CRDT(Conflict-free Replicated Data Type) 알고리즘을 활용하여 충돌 없는 동시 편집을 구현했습니다.</p>
 
 <h2>기술적 도전 과제</h2>

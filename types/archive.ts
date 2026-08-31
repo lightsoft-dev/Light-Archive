@@ -92,5 +92,3 @@ export interface Attachment {
   type: string
 }
 
-// Re-export for convenience
-export type { Project, Skill, Post }

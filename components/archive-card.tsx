@@ -2,7 +2,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 interface ArchiveCardProps {
-  id: number
+  id: string | number
   date: string
   category: string
   title: string
