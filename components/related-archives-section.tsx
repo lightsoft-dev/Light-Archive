@@ -53,7 +53,7 @@ export function RelatedArchivesSection({ currentArchive }: RelatedArchivesSectio
     if (archive.category === "프로젝트") {
       return `/projects/${archive.id}`
     } else if (archive.category === "기술") {
-      return `/skills/${archive.id}`
+      return `/tech/${archive.id}`
     }
     return `/projects/${archive.id}`
   }
@@ -63,7 +63,7 @@ export function RelatedArchivesSection({ currentArchive }: RelatedArchivesSectio
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl md:text-3xl font-normal text-black">관련 아카이브</h2>
         <Link
-          href={currentArchive.category === "프로젝트" ? "/projects" : "/skills"}
+          href={currentArchive.category === "프로젝트" ? "/projects" : "/tech"}
           className="text-sm text-gray-600 hover:text-black transition-colors"
         >
           전체 보기 →

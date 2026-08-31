@@ -47,7 +47,7 @@ export function RelatedArchives({ currentArchive }: RelatedArchivesProps) {
     if (archive.category === "프로젝트") {
       return `/projects/${archive.id}`
     } else if (archive.category === "기술") {
-      return `/skills/${archive.id}`
+      return `/tech/${archive.id}`
     }
     return `/projects/${archive.id}`
   }
@@ -118,7 +118,7 @@ export function RelatedArchives({ currentArchive }: RelatedArchivesProps) {
 
       <div className="p-3 border-t border-gray-200/50">
         <Link
-          href={currentArchive.category === "프로젝트" ? "/projects" : "/skills"}
+          href={currentArchive.category === "프로젝트" ? "/projects" : "/tech"}
           className="block text-center text-xs text-gray-600 hover:text-black transition-colors py-1"
         >
           {currentArchive.category} 더 보기 →

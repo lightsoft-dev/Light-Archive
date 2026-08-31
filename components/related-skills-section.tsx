@@ -39,7 +39,7 @@ export function RelatedSkillsSection({ currentSkillId }: { currentSkillId?: stri
         {relatedSkills.map((skill, index) => (
           <div key={skill.id}>
             <Link
-              href={`/skills/${skill.id}`}
+              href={`/tech/${skill.id}`}
               className="group block py-2 hover:opacity-80 transition-opacity"
             >
               <div className="flex gap-3">

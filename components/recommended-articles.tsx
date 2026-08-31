@@ -31,7 +31,7 @@ export function RecommendedArticles() {
     if (article.category === "프로젝트") {
       return `/projects/${article.id}`
     } else if (article.category === "기술") {
-      return `/skills/${article.id}`
+      return `/tech/${article.id}`
     }
     // 기본값
     return `/projects/${article.id}`

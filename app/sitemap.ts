@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next"
+import { SITE_URL } from "@/lib/site"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://light-archive.vercel.app"
+  const baseUrl = SITE_URL
 
   // 정적 페이지
   const staticPages: MetadataRoute.Sitemap = [
@@ -13,6 +14,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/projects`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/tech`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,

@@ -27,7 +27,7 @@ function Footerdemo() {
           <div>
             <h3 className="mb-4 text-lg font-semibold">카테고리</h3>
             <nav className="space-y-2 text-sm">
-              <a href="/skills" className="block transition-colors hover:text-primary">
+              <a href="/tech" className="block transition-colors hover:text-primary">
                 기술
               </a>
               <a href="/projects" className="block transition-colors hover:text-primary">

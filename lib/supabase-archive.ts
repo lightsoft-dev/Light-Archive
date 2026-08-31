@@ -86,9 +86,9 @@ export async function getProjects(): Promise<Archive[]> {
 }
 
 /**
- * 스킬만 가져오기
+ * 기술 아카이브만 가져오기
  */
-export async function getSkills(): Promise<Archive[]> {
+export async function getTechArchives(): Promise<Archive[]> {
   return getArchivesByCategory("기술")
 }
 

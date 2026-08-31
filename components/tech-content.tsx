@@ -6,12 +6,12 @@ import { RelatedArchivesSection } from "@/components/related-archives-section"
 import { getArchiveById, incrementViewCount } from "@/lib/supabase-archive"
 import type { Archive } from "@/types/archive"
 
-export function SkillContent({ id }: { id?: string }) {
-  const [skill, setSkill] = useState<Archive | null>(null)
+export function TechContent({ id }: { id?: string }) {
+  const [archive, setArchive] = useState<Archive | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchSkill() {
+    async function fetchArchive() {
       if (!id) {
         setLoading(false)
         return
@@ -19,20 +19,20 @@ export function SkillContent({ id }: { id?: string }) {
 
       try {
         const data = await getArchiveById(id)
-        setSkill(data)
+        setArchive(data)
 
         // 조회수 증가
         if (data) {
           incrementViewCount(id)
         }
       } catch (error) {
-        console.error("Failed to fetch skill:", error)
+        console.error("Failed to fetch archive:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchSkill()
+    fetchArchive()
   }, [id])
 
   if (loading) {
@@ -43,18 +43,18 @@ export function SkillContent({ id }: { id?: string }) {
     )
   }
 
-  if (!skill) {
+  if (!archive) {
     return (
       <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
-        <p>스킬을 찾을 수 없습니다.</p>
+        <p>문서를 찾을 수 없습니다.</p>
       </div>
     )
   }
 
   return (
     <ArchiveContent
-      archive={skill}
-      relatedSection={<RelatedArchivesSection currentArchive={skill} />}
+      archive={archive}
+      relatedSection={<RelatedArchivesSection currentArchive={archive} />}
     />
   )
 }
