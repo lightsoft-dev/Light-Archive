@@ -212,7 +212,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ## 에이전트 스킬 카탈로그 (/skills)
 
 `publish-agent-skill`로 배포한 스킬(또는 사내 전용 스킬)의 소개 페이지를 **에이전트가 API로 게시**한다.
-기획 정본은 `docs/skill-catalog-plan.md`.
+기획 정본은 `docs/skill-catalog-plan.md`, 공개/사내 판정과 전체 경로는 `docs/skill-publishing.md`.
+
+**사내 스킬은 private 저장소로 낸다.** `npx skills add` 는 접근 권한이 있으면 private 에서도
+동작하므로(실측), 사내 스킬을 public 으로 낼 이유가 없다. 아카이브에서는
+`visibility: "internal"` 로 게시해 로그인한 사람에게만 보이게 한다.
 
 ### 라우트
 

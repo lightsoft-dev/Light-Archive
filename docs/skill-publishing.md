@@ -3,33 +3,50 @@
 에이전트 스킬 하나가 "내 맥북에만 있는 것"에서 "팀이 찾아 쓰는 것"이 되기까지의 경로다.
 단계마다 담당 스킬이 다르고, **사내 전용이면 대부분을 건너뛴다.**
 
+## 먼저 정할 것 — 공개인가 사내인가
+
+**사내 스킬은 private 저장소로 낸다.** public 이 아닐 뿐 절차는 같고,
+`npx skills add owner/repo@skill` 은 **접근 권한이 있는 사람에게 그대로 동작한다**(실측).
+
+사내로 판정하는 신호 — 하나라도 걸리면 private:
+
+- 사내 제품·서비스 이름이 스킬 이름이나 문서에 있다
+- 사내 도메인·조직 계정이 기본값으로 박혀 있다
+- 사내 인프라(우리 API·DB·토큰)가 있어야만 동작한다
+- 사내 업무 절차·조직 구조가 문서에 드러난다
+
+**애매하면 private.** public 으로 바꾸는 건 언제든 되지만, 공개했던 것을 되돌려도
+skills.sh 색인과 포크는 남는다.
+
 ## 전체 흐름
 
 ```
 스킬 제작            skill-author
    │
-   ├─ 사내 전용이면 ────────────────────────┐
-   │                                        │
-   ▼                                        │
-공개 게이트          create-opensource       │   라이선스·시크릿·내부 노출 판정
-   │                                        │
-   ▼                                        │
-GitHub + skills.sh   publish-agent-skill    │   public repo, npx skills add 검증
-   │                                        │
-   ▼                                        ▼
-아카이브 게시        light-archive-publish       archive.lightsoft.dev/skills
+   ▼
+공개 범위 판정        (위 신호)
+   │
+   ├── 공개 ──▶ create-opensource ──▶ publish-agent-skill (public repo)
+   │                                   라이선스·시크릿 게이트 → skills.sh 색인
+   │
+   └── 사내 ──▶ publish-agent-skill (private repo)
+                 게이트는 그대로, topic·skills.sh 검증만 건너뜀
+   │
+   ▼
+아카이브 게시        light-archive-publish → archive.lightsoft.dev/skills
 ```
 
-| 단계 | 담당 | 사내 전용일 때 |
-|---|---|---|
-| 스킬 제작·개선·eval | `skill-author` | 동일 |
-| 공개 가능 판정 (라이선스·시크릿) | `create-opensource` | **건너뜀** |
-| public repo + skills.sh 등록 | `publish-agent-skill` | **건너뜀** |
-| 소개 페이지 게시 | `light-archive-publish` | 동일 |
+| 단계 | 담당 | 공개 | 사내 |
+|---|---|---|---|
+| 제작·개선·eval | `skill-author` | ○ | ○ |
+| 라이선스·시크릿 게이트 | `create-opensource` | ○ | 건너뜀 |
+| 저장소 + 설치 검증 | `publish-agent-skill` | `--public` | **`--private`** |
+| skills.sh 색인 확인 | `publish-agent-skill` | ○ | 해당 없음 |
+| 소개 페이지 게시 | `light-archive-publish` | `visibility: public` | **`visibility: internal`** |
 
-## 사내 전용 스킬 — 최단 경로
+## 사내 전용 스킬
 
-만들자마자 바로 공유할 수 있다. 공개 저장소가 없어도 된다.
+만들자마자 바로 공유할 수 있다.
 
 ```
 "이 스킬 아카이브에 올려줘"
@@ -38,7 +55,11 @@ GitHub + skills.sh   publish-agent-skill    │   public repo, npx skills add �
 `light-archive-publish`가 SKILL.md를 읽고 → 섹션을 골라 채우고 → 검증하고 →
 draft로 올려 미리보기를 준다. 확인 후 공개하면 `/skills`에 뜬다.
 
-카드에는 설치 명령 대신 **내부 경로**와 "사내 전용" 배지가 붙는다.
+카드에 "사내 전용" 배지가 붙고, **로그인한 사람에게만 보인다** —
+익명에게는 목록에서 빠지고 상세는 404, OG 이미지도 기본 카드만 나간다.
+
+저장소를 private 로 냈다면 설치 명령(`npx skills add`)을 그대로 쓴다. 접근 권한이 있는
+팀원에게는 동작하고, 없으면 404 다.
 
 ## 공개 스킬 — 전체 경로
 
