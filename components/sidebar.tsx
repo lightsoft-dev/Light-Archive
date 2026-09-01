@@ -67,8 +67,12 @@ export function Sidebar({ isOpen, onClose, onToggle }: SidebarProps) {
                   const hasChildren = item.children && item.children.length > 0
                   const isProject = item.id === "project"
                   const isTechnology = item.id === "technology"
+                  const isSkill = item.id === "skill"
                   const previousItem = section.items[itemIndex - 1]
-                  const shouldAddSpacing = (isTechnology && previousItem?.id === "home") || (isProject && previousItem?.id === "technology")
+                  const shouldAddSpacing =
+                    (isTechnology && previousItem?.id === "home") ||
+                    (isProject && previousItem?.id === "technology") ||
+                    (isSkill && previousItem?.id === "project")
 
                   return (
                     <div key={item.id} className={shouldAddSpacing ? "mt-4" : ""}>

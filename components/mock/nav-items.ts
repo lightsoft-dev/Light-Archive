@@ -95,33 +95,14 @@ export const mockNavItems: NavSection[] = [
         ],
       },
       {
+        // 기술·프로젝트의 하위는 "클로드 코드"처럼 주제인데, 스킬의 공개/사내 전용은
+        // 접근 범위라 결이 다르다. 사이드바에 섞으면 카테고리처럼 보인다.
+        // 범위 필터는 목록 페이지 상단에 두고, 사내 전용은 로그인한 사람에게만 보인다.
         id: "skill",
         label: "스킬",
+        href: "/skills",
         category: "스킬",
         order: 3,
-        children: [
-          {
-            id: "skill-all",
-            label: "전체보기",
-            href: "/skills",
-            category: "스킬",
-            order: 1,
-          },
-          {
-            id: "skill-public",
-            label: "공개",
-            href: "/skills?visibility=public",
-            category: "스킬",
-            order: 2,
-          },
-          {
-            id: "skill-internal",
-            label: "사내 전용",
-            href: "/skills?visibility=internal",
-            category: "스킬",
-            order: 3,
-          },
-        ],
       },
     ],
   },

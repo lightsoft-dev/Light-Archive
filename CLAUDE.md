@@ -143,6 +143,17 @@ op inject -i .env.op -o .env.local
 Supabase 키를 ERP 항목에서 참조하는 이유 — **같은 Supabase 프로젝트를 공유**하기 때문이다.
 같은 값을 두 곳에 두면 로테이션 때 한쪽만 바뀌어 갈린다.
 
+### 스킬로 아카이브에 게시할 때
+
+값을 셸에 붙여넣지 말고 1Password 참조를 그대로 넘긴다 — `light-archive-publish` 가
+`op read` 로 읽는다.
+
+```bash
+export SKILL_ARCHIVE_HOST=https://archive.lightsoft.dev
+export SKILL_ARCHIVE_TOKEN="op://Shared/wsilportxuzzckcjahj5nsldrm/LIGHT_ARCHIVE_PUBLISH_TOKEN"
+node ~/skills/macbook-cc/light-archive-publish/scripts/preflight.mjs
+```
+
 ### `.env.op` 를 고칠 때 걸리는 것 (실측)
 
 - **참조는 항목 ID로 쓴다.** 제목에 공백이 있으면 `op` 가 거기서 끊어 읽고
