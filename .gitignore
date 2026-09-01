@@ -19,6 +19,9 @@ yarn-error.log*
 # env files
 .env*
 !.env.example
+# .env.op 은 실제 값이 아니라 1Password 참조만 담아서 커밋한다.
+# 팀원은 `op inject -i .env.op -o .env.local` 로 실제 .env.local 을 만든다.
+!.env.op
 
 # vercel
 .vercel

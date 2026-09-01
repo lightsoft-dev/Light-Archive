@@ -121,6 +121,36 @@ export const supabase = createClient(
 - RLS(Row Level Security) 정책 기반 접근 제어
 - JWT 또는 Supabase Auth 기반 세션 관리
 
+## 환경변수 받기 — 1Password (2026-09-01)
+
+새로 합류하면 값을 물어보지 말고 아래 두 줄로 받는다. `.env.op` 는 저장소에 커밋돼 있고
+실제 값이 아니라 1Password 참조만 담는다.
+
+```bash
+op signin
+op inject -i .env.op -o .env.local
+```
+
+접근이 안 되면 `Shared` 볼트 공유를 요청한다(1Password CLI 는 `brew install 1password-cli`).
+
+| 값 | 1Password 항목 |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `OPENAI_API_KEY`, `LIGHT_ARCHIVE_PUBLISH_TOKEN`, `SKILL_PREVIEW_TOKEN`, `ADMIN_SESSION_SECRET` | **Light Archive - 개발 환경변수** |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 라이트소프트 ERP - Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | 라이트소프트 ERP - Supabase service_role key |
+| 운영 `ADMIN_PASSWORD` | **Light Archive - 관리자 계정** (로컬은 아무 값이나) |
+
+Supabase 키를 ERP 항목에서 참조하는 이유 — **같은 Supabase 프로젝트를 공유**하기 때문이다.
+같은 값을 두 곳에 두면 로테이션 때 한쪽만 바뀌어 갈린다.
+
+### `.env.op` 를 고칠 때 걸리는 것 (실측)
+
+- **참조는 항목 ID로 쓴다.** 제목에 공백이 있으면 `op` 가 거기서 끊어 읽고
+  `too few '/'` 로 실패한다. ID 는 제목이 바뀌어도 안 깨진다.
+- **주석에도 참조 문법을 쓰지 않는다.** `op inject` 는 주석 줄까지 해석해서,
+  설명으로 적어둔 예시를 치환하려다 실패한다. (이것 때문에 두 번 막혔다)
+- `.gitignore` 의 `.env*` 에 걸리므로 `!.env.op` 예외가 있어야 커밋된다.
+
 ## Supabase Integration
 
 ### 환경 변수 설정
